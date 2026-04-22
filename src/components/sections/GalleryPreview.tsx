@@ -3,7 +3,7 @@ import { images } from "@/data/site";
 import { ArrowRight } from "lucide-react";
 
 const tiles = [
-  { src: images.bedroom, label: "Bedroom Suite", className: "lg:col-span-2 lg:row-span-2" },
+  { src: images.bedroom, label: "Bedroom Suite", className: "col-span-2 row-span-2 lg:col-span-2 lg:row-span-2" },
   { src: images.kitchen, label: "Kitchen" },
   { src: images.dining, label: "Dining" },
   { src: images.view, label: "City View" },
@@ -23,7 +23,7 @@ export const GalleryPreview = () => (
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-4 h-[600px]">
+      <div className="grid grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-3 sm:gap-4 auto-rows-[140px] sm:auto-rows-[180px] lg:auto-rows-auto lg:h-[600px]">
         {tiles.map((t, i) => (
           <div
             key={i}

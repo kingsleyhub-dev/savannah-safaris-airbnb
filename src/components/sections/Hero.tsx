@@ -10,18 +10,18 @@ export const Hero = () => (
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
     </div>
 
-    <div className="relative container-luxe pt-32 pb-20 text-primary-foreground">
-      <div className="max-w-3xl space-y-8 animate-fade-up">
-        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs uppercase tracking-[0.25em]">
+    <div className="relative container-luxe pt-28 sm:pt-32 pb-16 sm:pb-20 text-primary-foreground w-full">
+      <div className="max-w-3xl space-y-6 sm:space-y-8 animate-fade-up">
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em]">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
           Now Booking · Kilimani, Nairobi
         </span>
 
-        <h1 className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl leading-[1.05] text-balance">
+        <h1 className="font-display font-bold fluid-h1 text-balance">
           Exclusive 2-Bedroom <span className="italic font-light text-accent">luxury stay</span> in the heart of Nairobi
         </h1>
 
-        <p className="text-lg sm:text-xl text-primary-foreground/85 max-w-2xl leading-relaxed">
+        <p className="text-base sm:text-lg md:text-xl text-primary-foreground/85 max-w-2xl leading-relaxed">
           City views, comfort, security and seamless direct booking. Minutes from Nairobi City Centre and the National Park.
         </p>
 

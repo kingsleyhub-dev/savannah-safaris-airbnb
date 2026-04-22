@@ -35,7 +35,7 @@ export const LocationPreview = () => (
         </Link>
       </div>
 
-      <div className="rounded-2xl overflow-hidden shadow-elegant aspect-square lg:aspect-auto lg:h-[600px] border border-border">
+      <div className="rounded-2xl overflow-hidden shadow-elegant aspect-[4/3] sm:aspect-square lg:aspect-auto lg:h-[600px] border border-border">
         <iframe
           title="Property location"
           src="https://www.google.com/maps?q=Kilimani,Nairobi&output=embed"
