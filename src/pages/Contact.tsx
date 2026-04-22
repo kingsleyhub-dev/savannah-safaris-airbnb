@@ -29,10 +29,11 @@ const Contact = () => {
         <div className="container-luxe grid lg:grid-cols-3 gap-8">
           <div className="space-y-4">
             {[
-              { icon: Phone, label: "Call us", val: property.whatsapp, href: `tel:${wa}` },
-              { icon: MessageCircle, label: "WhatsApp", val: "Quick reply", href: `https://wa.me/${wa}` },
-              { icon: Mail, label: "Email", val: property.email, href: `mailto:${property.email}` },
-              { icon: MapPin, label: "Location", val: property.location },
+              { icon: Phone, label: contact.whatsapp_primary.label, val: contact.whatsapp_primary.number, href: `tel:${waPrimary}` },
+              { icon: Phone, label: contact.whatsapp_secondary.label, val: contact.whatsapp_secondary.number, href: `tel:${waSecondary}` },
+              { icon: MessageCircle, label: "WhatsApp", val: "Quick reply", href: `https://wa.me/${waPrimary}` },
+              { icon: Mail, label: "Email", val: contact.email, href: `mailto:${contact.email}` },
+              { icon: MapPin, label: "Location", val: contact.location, href: undefined as string | undefined },
             ].map(({ icon: Icon, label, val, href }) => (
               <a key={label} href={href} className="block">
                 <Card className="p-6 hover:shadow-elegant transition-smooth flex items-center gap-4">
