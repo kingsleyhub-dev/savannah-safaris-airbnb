@@ -132,10 +132,12 @@
 
 @layer base {
   * { @apply border-border; }
+  html, body { @apply overflow-x-hidden; }
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
   h1, h2, h3, h4, h5, h6 { @apply font-display tracking-tight; }
+  img, video, iframe { @apply max-w-full h-auto; }
 }
 
 @layer utilities {
@@ -154,8 +156,10 @@
 
 @layer components {
   .container-luxe { @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
-  .section-padding { @apply py-20 md:py-28; }
+  .section-padding { @apply py-14 sm:py-20 md:py-28; }
   .eyebrow {
     @apply inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] font-medium text-primary;
   }
+  .fluid-h1 { font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.05; }
+  .fluid-h2 { font-size: clamp(1.875rem, 4.5vw, 3rem); line-height: 1.1; }
 }
