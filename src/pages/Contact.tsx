@@ -1,5 +1,5 @@
 import { PageHero } from "@/components/sections/PageHero";
-import { images, property } from "@/data/site";
+import { images } from "@/data/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,15 +8,18 @@ import { Card } from "@/components/ui/card";
 import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { FAQ } from "@/components/sections/FAQ";
+import { useContactInfo, toWaNumber } from "@/hooks/useContactInfo";
 
 const Contact = () => {
+  const contact = useContactInfo();
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Message sent. We'll reply within 2 hours.");
     (e.target as HTMLFormElement).reset();
   };
 
-  const wa = property.whatsapp.replace(/\D/g, "");
+  const waPrimary = toWaNumber(contact.whatsapp_primary.number);
+  const waSecondary = toWaNumber(contact.whatsapp_secondary.number);
 
   return (
     <>
