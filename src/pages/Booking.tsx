@@ -90,14 +90,16 @@ const Booking = () => {
           <form onSubmit={confirm} className="lg:col-span-2 space-y-8">
             <Card className="p-6 md:p-8 space-y-6">
               <h3 className="font-display text-2xl font-bold">1. Choose your dates</h3>
-              <Calendar
-                mode="range"
-                selected={range}
-                onSelect={setRange}
-                numberOfMonths={2}
-                disabled={{ before: new Date() }}
-                className="mx-auto"
-              />
+              <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <Calendar
+                  mode="range"
+                  selected={range}
+                  onSelect={setRange}
+                  numberOfMonths={typeof window !== "undefined" && window.innerWidth < 768 ? 1 : 2}
+                  disabled={{ before: new Date() }}
+                  className="mx-auto"
+                />
+              </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2"><Users className="size-4" /> Guests</Label>

@@ -3,7 +3,7 @@ import { images } from "@/data/site";
 import { ArrowRight } from "lucide-react";
 
 const tiles = [
-  { src: images.bedroom, label: "Bedroom Suite", className: "lg:col-span-2 lg:row-span-2" },
+  { src: images.bedroom, label: "Bedroom Suite", className: "col-span-2 row-span-2 lg:col-span-2 lg:row-span-2" },
   { src: images.kitchen, label: "Kitchen" },
   { src: images.dining, label: "Dining" },
   { src: images.view, label: "City View" },
