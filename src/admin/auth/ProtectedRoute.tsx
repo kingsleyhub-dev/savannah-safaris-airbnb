@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "./AuthProvider";
 import { Loader2 } from "lucide-react";
-import { hasRequiredRole, type AdminRole } from "./permissions";
+import { useAuth } from "@/admin/auth/AuthProvider";
+import { hasRequiredRole, type AdminRole } from "@/admin/auth/permissions";
 
 interface ProtectedRouteProps {
   allowedRoles?: AdminRole[];
