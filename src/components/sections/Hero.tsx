@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
-import { AnimatedSafariLogo } from "@/components/brand/AnimatedSafariLogo";
+import logoTransparent from "@/assets/logo-transparent.png";
 
 export const Hero = () => {
   const { get } = useSiteContent();
@@ -21,8 +21,11 @@ export const Hero = () => {
       <div className="mx-auto max-w-3xl flex flex-col items-center text-center space-y-5 sm:space-y-7">
         {/* Animated logo centerpiece — fixed size, gentle ambient float (no zoom/scale) */}
         <div className="hero-logo-wrap animate-hero-logo-in -mb-2">
-          <AnimatedSafariLogo
-            className="hero-logo-float h-56 sm:h-72 md:h-80 lg:h-96 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
+          <img
+            src={logoTransparent}
+            alt="Savannah Safaris"
+            className="hero-logo-float h-44 sm:h-56 md:h-64 lg:h-72 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
+            draggable={false}
           />
         </div>
 
