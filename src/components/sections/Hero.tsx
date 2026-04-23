@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
-import logoTransparent from "@/assets/logo-transparent.png";
+import homeHeroLogo from "@/assets/home-hero-logo.png";
 
 export const Hero = () => {
   const { get } = useSiteContent();
@@ -22,7 +22,7 @@ export const Hero = () => {
         {/* Animated logo centerpiece — fixed size, gentle ambient float (no zoom/scale) */}
         <div className="hero-logo-wrap animate-hero-logo-in -mb-2">
           <img
-            src={logoTransparent}
+            src={homeHeroLogo}
             alt="Savannah Safaris"
             className="hero-logo-float h-44 sm:h-56 md:h-64 lg:h-72 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
             draggable={false}
