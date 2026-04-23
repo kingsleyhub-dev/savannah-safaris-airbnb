@@ -4,19 +4,21 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileText, Image as ImageIcon, Phone, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { CONTENT_MANAGER_ROLES, SETTINGS_MANAGER_ROLES, hasRequiredRole } from "../auth/permissions";
 
 const nav = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/dashboard/pages", label: "Pages", icon: FileText },
-  { to: "/admin/dashboard/media", label: "Media Library", icon: ImageIcon },
-  { to: "/admin/dashboard/contact", label: "Contact", icon: Phone },
-  { to: "/admin/dashboard/settings", label: "Settings", icon: Settings },
+  { to: "/admin/dashboard/pages", label: "Pages", icon: FileText, allowedRoles: CONTENT_MANAGER_ROLES },
+  { to: "/admin/dashboard/media", label: "Media Library", icon: ImageIcon, allowedRoles: CONTENT_MANAGER_ROLES },
+  { to: "/admin/dashboard/contact", label: "Contact", icon: Phone, allowedRoles: SETTINGS_MANAGER_ROLES },
+  { to: "/admin/dashboard/settings", label: "Settings", icon: Settings, allowedRoles: SETTINGS_MANAGER_ROLES },
 ];
 
 export const AdminLayout = () => {
   const { user, signOut, roles } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const visibleNav = nav.filter((item) => !item.allowedRoles || hasRequiredRole(roles, item.allowedRoles));
 
   const handleSignOut = async () => { await signOut(); navigate("/admin"); };
 
@@ -39,7 +41,7 @@ export const AdminLayout = () => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {nav.map(({ to, label, icon: Icon, end }) => (
+          {visibleNav.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth",
