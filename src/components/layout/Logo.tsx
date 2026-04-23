@@ -1,4 +1,4 @@
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-transparent.png";
 import { Link } from "react-router-dom";
 
 export const Logo = ({ variant = "dark" }: { variant?: "dark" | "light" }) => (
