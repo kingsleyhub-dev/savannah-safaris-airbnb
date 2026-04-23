@@ -7,10 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Tag, Users, Plane, Car, MapPin } from "lucide-react";
+import { CheckCircle2, Tag, Users, Plane, Car, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DateRange } from "react-day-picker";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
+import { useAuth } from "@/admin/auth/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const addOns = [
   { id: "airport", label: "Airport pickup (JKIA)", price: 35, icon: Plane },
@@ -20,6 +24,7 @@ const addOns = [
 
 const Booking = () => {
   const { get } = useSiteContent();
+  const { user } = useAuth();
   const h = (k: string, fb: string) => get("booking", "hero", k, fb);
   const s = (k: string, fb: string) => get("booking", "summary", k, fb);
   const [range, setRange] = useState<DateRange | undefined>();
@@ -28,6 +33,25 @@ const Booking = () => {
   const [discount, setDiscount] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+
+  // Prefill guest details from the signed-in user's profile
+  useEffect(() => {
+    if (!user) return;
+    setEmail(user.email ?? "");
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data?.full_name) setFullName(data.full_name);
+    })();
+  }, [user]);
 
   const nights = useMemo(() => {
     if (!range?.from || !range?.to) return 0;
@@ -50,11 +74,40 @@ const Booking = () => {
     }
   };
 
-  const confirm = (e: React.FormEvent) => {
+  const confirm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nights === 0) return toast.error("Please select your dates");
+    if (!user) return toast.error("Please sign in to confirm your booking");
+    if (!fullName.trim() || !email.trim() || !phone.trim()) {
+      return toast.error("Please fill in your name, email, and phone");
+    }
+
+    setSaving(true);
+    // Persist the booking. RLS ensures user_id must match auth.uid().
+    const { error } = await supabase.from("bookings").insert({
+      user_id: user.id,
+      guest_name: fullName.trim(),
+      guest_email: email.trim(),
+      guest_phone: phone.trim(),
+      guest_country: country.trim() || null,
+      check_in: range!.from!.toISOString().slice(0, 10),
+      check_out: range!.to!.toISOString().slice(0, 10),
+      guests,
+      nights,
+      add_ons: selected.map((id) => addOns.find((a) => a.id === id)).filter(Boolean),
+      promo_code: promo.trim() || null,
+      discount_percent: discount,
+      subtotal_cents: subtotal * 100,
+      cleaning_cents: cleaning * 100,
+      addons_cents: addonTotal * 100,
+      discount_cents: discountAmt * 100,
+      total_cents: total * 100,
+      status: "confirmed",
+    });
+    setSaving(false);
+    if (error) return toast.error(error.message);
     setSubmitted(true);
-    toast.success("Booking confirmed! Check your email for details.");
+    toast.success("Booking confirmed!");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -69,16 +122,19 @@ const Booking = () => {
             </div>
             <h2 className="font-display text-3xl font-bold">Thank you!</h2>
             <p className="text-muted-foreground text-lg">
-              A confirmation and invoice are on the way to your inbox. We'll be in touch shortly with check-in details.
+              Your reservation is saved. View it any time from <Link to="/my-bookings" className="text-primary underline">My Bookings</Link>.
             </p>
             <Card className="text-left p-6 space-y-2">
               <p><span className="text-muted-foreground">Dates:</span> {range?.from?.toLocaleDateString()} – {range?.to?.toLocaleDateString()}</p>
               <p><span className="text-muted-foreground">Guests:</span> {guests}</p>
               <p><span className="text-muted-foreground">Total:</span> ${total}</p>
             </Card>
-            <Button onClick={() => { setSubmitted(false); setRange(undefined); }} variant="outline" size="lg">
-              Make another booking
-            </Button>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Button asChild variant="hero" size="lg"><Link to="/my-bookings">View my bookings</Link></Button>
+              <Button onClick={() => { setSubmitted(false); setRange(undefined); }} variant="outline" size="lg">
+                Make another booking
+              </Button>
+            </div>
           </div>
         </section>
       </>
