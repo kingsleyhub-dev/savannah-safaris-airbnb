@@ -84,7 +84,7 @@ const Booking = () => {
 
     setSaving(true);
     // Persist the booking. RLS ensures user_id must match auth.uid().
-    const { error } = await supabase.from("bookings").insert({
+    const { error } = await supabase.from("bookings").insert([{
       user_id: user.id,
       guest_name: fullName.trim(),
       guest_email: email.trim(),
@@ -94,7 +94,7 @@ const Booking = () => {
       check_out: range!.to!.toISOString().slice(0, 10),
       guests,
       nights,
-      add_ons: selected.map((id) => addOns.find((a) => a.id === id)).filter(Boolean),
+      add_ons: selected.map((id) => addOns.find((a) => a.id === id)).filter(Boolean) as any,
       promo_code: promo.trim() || null,
       discount_percent: discount,
       subtotal_cents: subtotal * 100,
@@ -103,7 +103,7 @@ const Booking = () => {
       discount_cents: discountAmt * 100,
       total_cents: total * 100,
       status: "confirmed",
-    });
+    }]);
     setSaving(false);
     if (error) return toast.error(error.message);
     setSubmitted(true);
