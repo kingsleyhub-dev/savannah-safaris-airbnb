@@ -1,10 +1,10 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthProvider";
+import { useAuth } from "@/admin/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileText, Image as ImageIcon, Phone, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CONTENT_MANAGER_ROLES, SETTINGS_MANAGER_ROLES, hasRequiredRole } from "../auth/permissions";
+import { CONTENT_MANAGER_ROLES, SETTINGS_MANAGER_ROLES, hasRequiredRole } from "@/admin/auth/permissions";
 
 const nav = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "../auth/AuthProvider";
+import { useAuth } from "@/admin/auth/AuthProvider";
 import { FileText, Image as ImageIcon, Phone, Activity, ShieldCheck, ShieldAlert, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";

@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useAuth } from "../auth/AuthProvider";
+import { useAuth } from "@/admin/auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { ADMIN_PORTAL_ROLES, hasRequiredRole } from "../auth/permissions";
+import { ADMIN_PORTAL_ROLES, hasRequiredRole } from "@/admin/auth/permissions";
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(72);
