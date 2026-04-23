@@ -1,13 +1,17 @@
 import { Star, Quote } from "lucide-react";
 import { testimonials } from "@/data/site";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
-export const Testimonials = () => (
+export const Testimonials = () => {
+  const { get } = useSiteContent();
+  const g = (k: string, fb: string) => get("home", "testimonials", k, fb);
+  return (
   <section className="section-padding gradient-soft">
     <div className="container-luxe">
       <div className="text-center max-w-2xl mx-auto mb-12 space-y-4">
-        <span className="eyebrow">— Reviews</span>
-        <h2 className="font-display text-4xl sm:text-5xl font-bold">Loved by guests worldwide</h2>
+        <span className="eyebrow">{g("eyebrow", "— Reviews")}</span>
+        <h2 className="font-display text-4xl sm:text-5xl font-bold">{g("title", "Loved by guests worldwide")}</h2>
       </div>
 
       <Carousel opts={{ loop: true, align: "start" }} className="max-w-5xl mx-auto">
@@ -33,4 +37,5 @@ export const Testimonials = () => (
       </Carousel>
     </div>
   </section>
-);
+  );
+};

@@ -2,8 +2,12 @@ import { images } from "@/data/site";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
-export const ValueProp = () => (
+export const ValueProp = () => {
+  const { get } = useSiteContent();
+  const g = (k: string, fb: string) => get("home", "value_prop", k, fb);
+  return (
   <section className="section-padding">
     <div className="container-luxe grid lg:grid-cols-2 gap-16 items-center">
       <div className="relative animate-fade-up">
@@ -22,13 +26,12 @@ export const ValueProp = () => (
       </div>
 
       <div className="space-y-6 animate-fade-up" style={{ animationDelay: "0.15s" }}>
-        <span className="eyebrow">— About the property</span>
+        <span className="eyebrow">{g("eyebrow", "— About the property")}</span>
         <h2 className="font-display text-4xl sm:text-5xl font-bold leading-tight text-balance">
-          A boutique escape where <span className="italic font-light text-primary">nature</span> meets the city.
+          {g("title", "A boutique escape where nature meets the city.")}
         </h2>
-        <p className="text-lg text-muted-foreground leading-relaxed">
-          A stunning 2-bedroom luxury apartment with city views, ample security, free parking and high-speed Wi-Fi.
-          Centrally located, with quick access to Nairobi City Centre and Nairobi National Park.
+        <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
+          {g("body", "A stunning 2-bedroom luxury apartment with city views, ample security, free parking and high-speed Wi-Fi. Centrally located, with quick access to Nairobi City Centre and Nairobi National Park.")}
         </p>
         <ul className="grid grid-cols-2 gap-3 text-sm">
           {["2 Bedrooms", "2 Ensuite Bathrooms", "Modern Kitchen", "Dining for 6", "Sitting Lounge", "Up to 4 Guests"].map((f) => (
@@ -43,4 +46,5 @@ export const ValueProp = () => (
       </div>
     </div>
   </section>
-);
+  );
+};

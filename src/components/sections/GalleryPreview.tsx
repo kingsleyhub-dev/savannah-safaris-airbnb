@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { images } from "@/data/site";
 import { ArrowRight } from "lucide-react";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const tiles = [
   { src: images.bedroom, label: "Bedroom Suite", className: "col-span-2 row-span-2 lg:col-span-2 lg:row-span-2" },
@@ -10,16 +11,19 @@ const tiles = [
   { src: images.bathroom, label: "Bath" },
 ];
 
-export const GalleryPreview = () => (
+export const GalleryPreview = () => {
+  const { get } = useSiteContent();
+  const g = (k: string, fb: string) => get("home", "gallery_preview", k, fb);
+  return (
   <section className="section-padding">
     <div className="container-luxe">
       <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
         <div className="space-y-3 max-w-xl">
-          <span className="eyebrow">— Gallery</span>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold">A look inside</h2>
+          <span className="eyebrow">{g("eyebrow", "— Gallery")}</span>
+          <h2 className="font-display text-4xl sm:text-5xl font-bold">{g("title", "A look inside")}</h2>
         </div>
         <Link to="/gallery" className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-smooth">
-          View full gallery <ArrowRight className="size-4" />
+          {g("cta", "View full gallery")} <ArrowRight className="size-4" />
         </Link>
       </div>
 
@@ -38,4 +42,5 @@ export const GalleryPreview = () => (
       </div>
     </div>
   </section>
-);
+  );
+};

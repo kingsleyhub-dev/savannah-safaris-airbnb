@@ -2,11 +2,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
-export const Hero = () => (
+export const Hero = () => {
+  const { get } = useSiteContent();
+  const g = (k: string, fb: string) => get("home", "hero", k, fb);
+  const heroImage = resolveImage(g("image", ""), images.hero);
+  return (
   <section className="relative min-h-screen flex items-center overflow-hidden">
     <div className="absolute inset-0">
-      <img src={images.hero} alt="Luxury Nairobi apartment with city view" className="w-full h-full object-cover animate-ken-burns" />
+      <img src={heroImage} alt="Luxury Nairobi apartment with city view" className="w-full h-full object-cover animate-ken-burns" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
     </div>
 
@@ -14,35 +19,35 @@ export const Hero = () => (
       <div className="max-w-3xl space-y-6 sm:space-y-8 animate-fade-up">
         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em]">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          Now Booking · Kilimani, Nairobi
+          {g("badge_text", "Now Booking · Kilimani, Nairobi")}
         </span>
 
         <h1 className="font-display font-bold fluid-h1 text-balance">
-          Exclusive 2-Bedroom <span className="italic font-light text-accent">luxury stay</span> in the heart of Nairobi
+          {g("title_part1", "Exclusive 2-Bedroom")} <span className="italic font-light text-accent">{g("title_emphasis", "luxury stay")}</span> {g("title_part2", "in the heart of Nairobi")}
         </h1>
 
         <p className="text-base sm:text-lg md:text-xl text-primary-foreground/85 max-w-2xl leading-relaxed">
-          City views, comfort, security and seamless direct booking. Minutes from Nairobi City Centre and the National Park.
+          {g("subtitle", "City views, comfort, security and seamless direct booking. Minutes from Nairobi City Centre and the National Park.")}
         </p>
 
         <div className="flex flex-wrap gap-3 pt-2">
           <Button asChild variant="gold" size="xl">
-            <Link to="/booking">Book Now <ArrowRight className="size-4" /></Link>
+            <Link to="/booking">{g("cta_book", "Book Now")} <ArrowRight className="size-4" /></Link>
           </Button>
           <Button asChild variant="glass" size="xl">
-            <Link to="/property">View Rooms</Link>
+            <Link to="/property">{g("cta_rooms", "View Rooms")}</Link>
           </Button>
           <Button asChild variant="glass" size="xl">
-            <Link to="/services">Explore Amenities</Link>
+            <Link to="/services">{g("cta_amenities", "Explore Amenities")}</Link>
           </Button>
         </div>
 
         <div className="flex items-center gap-6 pt-6 text-sm">
           <div className="flex items-center gap-1">
             {[...Array(5)].map((_, i) => <Star key={i} className="size-4 fill-accent text-accent" />)}
-            <span className="ml-2 font-medium">4.96</span>
+            <span className="ml-2 font-medium">{g("rating", "4.96")}</span>
           </div>
-          <span className="text-primary-foreground/70">200+ verified guest reviews</span>
+          <span className="text-primary-foreground/70">{g("reviews_text", "200+ verified guest reviews")}</span>
         </div>
       </div>
     </div>
@@ -54,4 +59,5 @@ export const Hero = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
