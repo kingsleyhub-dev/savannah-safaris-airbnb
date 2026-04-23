@@ -5,11 +5,11 @@ import { ArrowRight } from "lucide-react";
 
 export const LocationPreview = () => (
   <section className="section-padding">
-    <div className="container-luxe grid lg:grid-cols-2 gap-12 items-center">
+    <div className="container-luxe grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-12">
       <div className="space-y-6">
         <span className="eyebrow">— Location</span>
-        <h2 className="font-display text-4xl sm:text-5xl font-bold text-balance">Centrally placed, perfectly connected</h2>
-        <p className="text-muted-foreground text-lg">
+        <h2 className="font-display text-3xl font-bold text-balance sm:text-4xl lg:text-5xl">Centrally placed, perfectly connected</h2>
+        <p className="text-base text-muted-foreground sm:text-lg">
           Nestled in upscale Kilimani, you're minutes from the city's best dining, shopping and the gateway to Nairobi National Park.
         </p>
 
@@ -35,7 +35,7 @@ export const LocationPreview = () => (
         </Link>
       </div>
 
-      <div className="rounded-2xl overflow-hidden shadow-elegant aspect-[4/3] sm:aspect-square lg:aspect-auto lg:h-[600px] border border-border">
+      <div className="overflow-hidden rounded-2xl border border-border shadow-elegant aspect-[4/3] sm:aspect-square lg:aspect-[4/5] lg:max-h-[40rem]">
         <iframe
           title="Property location"
           src="https://www.google.com/maps?q=Kilimani,Nairobi&output=embed"

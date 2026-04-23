@@ -37,7 +37,7 @@ const Services = () => {
       />
 
       <section className="section-padding">
-        <div className="container-luxe grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="container-luxe grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           {services.map((s) => (
             <Card key={s.title} className="p-6 hover:shadow-elegant transition-smooth group">
               <div className="size-12 rounded-xl gradient-forest text-primary-foreground flex items-center justify-center mb-4 group-hover:scale-110 transition-smooth">
@@ -52,16 +52,16 @@ const Services = () => {
       </section>
 
       <section className="section-padding bg-secondary/40">
-        <div className="container-luxe grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container-luxe grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-12">
           <div className="overflow-hidden rounded-2xl shadow-elegant">
             <img src={resolveImage(f("image", ""), images.nissan)} alt="Joel's Nissan with driver" className="w-full aspect-[4/3] object-cover" />
           </div>
           <div className="space-y-6">
             <span className="eyebrow">— Featured service</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-balance">
+            <h2 className="font-display text-3xl font-bold text-balance sm:text-4xl md:text-5xl">
               {f("title", "Joel's Nissan with driver")}
             </h2>
-            <p className="text-muted-foreground text-lg whitespace-pre-line">
+            <p className="text-base whitespace-pre-line text-muted-foreground sm:text-lg">
               {f("body", "A premium chauffeured experience for guests who want to explore Nairobi or travel further afield in comfort and style. Joel is friendly, punctual, and knows the city inside out.")}
             </p>
             <div className="flex flex-wrap gap-2">

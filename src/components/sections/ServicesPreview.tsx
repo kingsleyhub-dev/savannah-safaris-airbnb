@@ -10,20 +10,20 @@ const services = [
 ];
 
 export const ServicesPreview = () => (
-  <section className="section-padding bg-foreground text-primary-foreground relative overflow-hidden">
+  <section className="relative overflow-hidden bg-foreground text-primary-foreground section-padding">
     <div className="absolute inset-0 opacity-20">
       <img src={images.nissan} alt="" className="w-full h-full object-cover" />
     </div>
     <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/80 to-foreground/40" />
 
     <div className="container-luxe relative">
-      <div className="grid lg:grid-cols-2 gap-12">
+      <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
         <div className="space-y-6">
           <span className="eyebrow text-accent">— Premium add-ons</span>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-balance">
+          <h2 className="font-display text-3xl font-bold text-balance sm:text-4xl lg:text-5xl">
             Travel like royalty with <span className="italic font-light text-accent">Joel's Nissan</span>
           </h2>
-          <p className="text-primary-foreground/80 text-lg leading-relaxed">
+          <p className="text-base leading-relaxed text-primary-foreground/80 sm:text-lg">
             Need a driver for city trips or long-distance travel? Request Joel's Nissan — a premium chauffeured ride for total convenience and comfort.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -33,7 +33,7 @@ export const ServicesPreview = () => (
               </span>
             ))}
           </div>
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <Button asChild variant="gold" size="lg">
               <Link to="/services">Request Joel's Nissan</Link>
             </Button>
@@ -43,7 +43,7 @@ export const ServicesPreview = () => (
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-1 gap-4">
+        <div className="grid gap-4">
           {services.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-smooth">
               <div className="flex items-start gap-4">

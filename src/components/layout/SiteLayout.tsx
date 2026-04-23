@@ -6,10 +6,10 @@ import { StickyBookCTA } from "./StickyBookCTA";
 import { ScrollToTop } from "./ScrollToTop";
 
 export const SiteLayout = () => (
-  <div className="min-h-screen flex flex-col bg-background">
+  <div className="min-h-screen overflow-x-hidden flex flex-col bg-background">
     <ScrollToTop />
     <Navbar />
-    <main className="flex-1">
+    <main className="flex-1 min-w-0 overflow-x-hidden">
       <Outlet />
     </main>
     <Footer />

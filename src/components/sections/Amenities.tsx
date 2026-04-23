@@ -4,18 +4,18 @@ import { amenities } from "@/data/site";
 export const Amenities = () => (
   <section className="section-padding bg-secondary/40">
     <div className="container-luxe">
-      <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+      <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center sm:mb-16">
         <span className="eyebrow">— Amenities</span>
-        <h2 className="font-display text-4xl sm:text-5xl font-bold text-balance">Every comfort, considered</h2>
-        <p className="text-muted-foreground text-lg">Thoughtfully equipped to feel like a private residence — only better.</p>
+        <h2 className="font-display text-3xl font-bold text-balance sm:text-4xl lg:text-5xl">Every comfort, considered</h2>
+        <p className="text-base text-muted-foreground sm:text-lg">Thoughtfully equipped to feel like a private residence — only better.</p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {amenities.map((a, i) => {
           const Icon = (Icons as any)[a.icon] ?? Icons.Sparkles;
           return (
             <div
               key={a.label}
-              className="group bg-card rounded-2xl p-6 border border-border hover:border-primary/30 hover:shadow-elegant transition-smooth animate-fade-up"
+              className="group rounded-2xl border border-border bg-card p-5 transition-smooth hover:border-primary/30 hover:shadow-elegant animate-fade-up sm:p-6"
               style={{ animationDelay: `${i * 50}ms` }}
             >
               <div className="size-12 rounded-xl gradient-forest text-primary-foreground flex items-center justify-center mb-4 group-hover:scale-110 transition-smooth">
