@@ -14,6 +14,7 @@ interface AuthCtx {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  syncAdminRoles: (userId?: string, email?: string | null) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string }>;
 }
@@ -26,6 +27,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [rolesLoading, setRolesLoading] = useState(false);
+
+  const syncAdminRoles = async (userId?: string, email?: string | null) => {
+    if (!userId || !email) return;
+    const { error } = await supabase.rpc("sync_admin_roles", { _user_id: userId, _email: email });
+    if (error) throw error;
+    await loadRoles(userId);
+  };
 
   const loadRoles = async (uid: string) => {
     setRolesLoading(true);
@@ -61,7 +69,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data.user) {
+      await syncAdminRoles(data.user.id, data.user.email);
+    }
     return { error: error?.message };
   };
 
@@ -80,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAdmin = hasRequiredRole(roles, ADMIN_PORTAL_ROLES);
 
   return (
-    <Ctx.Provider value={{ user, session, roles, loading, rolesLoading, isAdmin, isSuperAdmin, signIn, signOut, resetPassword }}>
+    <Ctx.Provider value={{ user, session, roles, loading, rolesLoading, isAdmin, isSuperAdmin, signIn, syncAdminRoles, signOut, resetPassword }}>
       {children}
     </Ctx.Provider>
   );
