@@ -17,25 +17,25 @@ export const GalleryPreview = () => {
   return (
   <section className="section-padding">
     <div className="container-luxe">
-      <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
-        <div className="space-y-3 max-w-xl">
+      <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-6">
+        <div className="max-w-xl space-y-3">
           <span className="eyebrow">{g("eyebrow", "— Gallery")}</span>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold">{g("title", "A look inside")}</h2>
+          <h2 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">{g("title", "A look inside")}</h2>
         </div>
         <Link to="/gallery" className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-smooth">
           {g("cta", "View full gallery")} <ArrowRight className="size-4" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-3 sm:gap-4 auto-rows-[140px] sm:auto-rows-[180px] lg:auto-rows-auto lg:h-[600px]">
+      <div className="grid grid-cols-1 gap-3 auto-rows-[220px] min-[420px]:grid-cols-2 min-[420px]:auto-rows-[140px] sm:gap-4 sm:auto-rows-[180px] lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-fr lg:min-h-[36rem]">
         {tiles.map((t, i) => (
           <div
             key={i}
             className={`relative overflow-hidden rounded-2xl group cursor-pointer ${t.className ?? ""}`}
           >
             <img src={t.src} alt={t.label} loading="lazy" className="w-full h-full object-cover transition-elegant group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-smooth flex items-end p-6">
-              <span className="text-primary-foreground font-display text-xl">{t.label}</span>
+            <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/70 via-transparent to-transparent p-4 opacity-100 transition-smooth group-hover:opacity-100 sm:p-6 lg:opacity-0">
+              <span className="text-lg font-display text-primary-foreground sm:text-xl">{t.label}</span>
             </div>
           </div>
         ))}
