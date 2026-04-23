@@ -58,14 +58,14 @@ const SignIn = () => {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-secondary/30 py-24 px-4">
+    <section className="flex min-h-screen items-center justify-center bg-secondary/30 px-4 py-20 sm:py-24">
       <div className="w-full max-w-md space-y-6">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-smooth">
           <ArrowLeft className="size-4" /> Back to site
         </Link>
-        <Card className="p-8 shadow-elegant">
+        <Card className="p-6 shadow-elegant sm:p-8">
           <div className="space-y-2 text-center mb-8">
-            <h1 className="font-display text-3xl font-bold">Welcome back</h1>
+            <h1 className="font-display text-2xl font-bold sm:text-3xl">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Sign in to manage your stay</p>
           </div>
 

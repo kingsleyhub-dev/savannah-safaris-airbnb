@@ -25,13 +25,13 @@ const Location = () => {
     />
 
     <section className="section-padding">
-      <div className="container-luxe space-y-12">
-        <div className="rounded-2xl overflow-hidden shadow-elegant aspect-[16/9] border border-border">
+      <div className="container-luxe space-y-10 sm:space-y-12">
+        <div className="overflow-hidden rounded-2xl border border-border shadow-elegant aspect-[4/3] sm:aspect-[16/9]">
           <iframe title="Map" src="https://www.google.com/maps?q=Kilimani,Nairobi&output=embed" width="100%" height="100%" loading="lazy" style={{ border: 0 }} />
         </div>
 
         <div>
-          <h2 className="font-display text-4xl font-bold text-center mb-10">Things to do nearby</h2>
+          <h2 className="mb-8 text-center font-display text-3xl font-bold sm:mb-10 sm:text-4xl">Things to do nearby</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {nearbyPlaces.map((p) => {
               const Icon = (Icons as any)[p.icon] ?? Icons.MapPin;
@@ -54,7 +54,7 @@ const Location = () => {
       <div className="container-luxe">
         <div className="text-center mb-12 space-y-3">
           <span className="eyebrow">{r("eyebrow", "— Why guests love it")}</span>
-          <h2 className="font-display text-4xl font-bold">{r("title", "Why guests love this location")}</h2>
+          <h2 className="font-display text-3xl font-bold sm:text-4xl">{r("title", "Why guests love this location")}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {reasons.map(({ icon: Icon, title, desc }) => (

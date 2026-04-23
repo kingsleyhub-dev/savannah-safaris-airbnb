@@ -34,7 +34,7 @@ const Contact = () => {
       />
 
       <section className="section-padding">
-        <div className="container-luxe grid lg:grid-cols-3 gap-8">
+        <div className="container-luxe grid gap-6 lg:grid-cols-3 lg:gap-8">
           <div className="space-y-4">
             {[
               { icon: Phone, label: contact.whatsapp_primary.label, val: contact.whatsapp_primary.number, href: `tel:${waPrimary}` },
@@ -44,7 +44,7 @@ const Contact = () => {
               { icon: MapPin, label: "Location", val: contact.location, href: undefined as string | undefined },
             ].map(({ icon: Icon, label, val, href }) => (
               <a key={label} href={href} className="block">
-                <Card className="p-6 hover:shadow-elegant transition-smooth flex items-center gap-4">
+                <Card className="flex items-center gap-4 p-5 transition-smooth hover:shadow-elegant sm:p-6">
                   <div className="size-12 rounded-xl gradient-forest text-primary-foreground flex items-center justify-center shrink-0">
                     <Icon className="size-5" />
                   </div>
@@ -58,7 +58,7 @@ const Contact = () => {
           </div>
 
           <Card className="lg:col-span-2 p-6 md:p-8">
-            <h3 className="font-display text-2xl font-bold mb-6">Send us a message</h3>
+            <h3 className="mb-6 font-display text-xl font-bold sm:text-2xl">Send us a message</h3>
             <form onSubmit={submit} className="space-y-5">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Name</Label><Input required /></div>
@@ -79,8 +79,8 @@ const Contact = () => {
         </div>
       </section>
 
-      <section className="container-luxe pb-20">
-        <div className="rounded-2xl overflow-hidden shadow-elegant aspect-[16/9] border border-border">
+      <section className="container-luxe pb-16 sm:pb-20">
+        <div className="overflow-hidden rounded-2xl border border-border shadow-elegant aspect-[4/3] sm:aspect-[16/9]">
           <iframe title="Map" src="https://www.google.com/maps?q=Kilimani,Nairobi&output=embed" width="100%" height="100%" loading="lazy" style={{ border: 0 }} />
         </div>
       </section>
