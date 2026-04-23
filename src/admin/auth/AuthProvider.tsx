@@ -1,14 +1,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
+import { ADMIN_PORTAL_ROLES, hasRequiredRole, type AdminRole } from "./permissions";
 
-type Role = "super_admin" | "admin" | "editor";
+type Role = AdminRole;
 
 interface AuthCtx {
   user: User | null;
   session: Session | null;
   roles: Role[];
   loading: boolean;
+  rolesLoading: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
@@ -23,10 +25,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(false);
 
   const loadRoles = async (uid: string) => {
+    setRolesLoading(true);
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
     setRoles((data ?? []).map((r: { role: Role }) => r.role));
+    setRolesLoading(false);
   };
 
   useEffect(() => {
@@ -39,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setTimeout(() => loadRoles(s.user.id), 0);
       } else {
         setRoles([]);
+        setRolesLoading(false);
       }
     });
 
@@ -47,6 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) loadRoles(s.user.id);
+      else setRolesLoading(false);
       setLoading(false);
     });
 
@@ -70,10 +77,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const isSuperAdmin = roles.includes("super_admin");
-  const isAdmin = isSuperAdmin || roles.includes("admin");
+  const isAdmin = hasRequiredRole(roles, ADMIN_PORTAL_ROLES);
 
   return (
-    <Ctx.Provider value={{ user, session, roles, loading, isAdmin, isSuperAdmin, signIn, signOut, resetPassword }}>
+    <Ctx.Provider value={{ user, session, roles, loading, rolesLoading, isAdmin, isSuperAdmin, signIn, signOut, resetPassword }}>
       {children}
     </Ctx.Provider>
   );
