@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Tag, Users, Plane, Car, MapPin, Loader2 } from "lucide-react";
+import { CheckCircle2, Tag, Users, Plane, Car, MapPin, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 import type { DateRange } from "react-day-picker";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
@@ -15,6 +15,7 @@ import { useAuth } from "@/admin/auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { downloadReceipt } from "@/lib/receipt";
 
 const addOns = [
   { id: "airport", label: "Airport pickup (JKIA)", price: 35, icon: Plane },
@@ -38,6 +39,8 @@ const Booking = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
+  // Holds the booking row id returned by Supabase so we can stamp the receipt with it.
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   // Prefill guest details from the signed-in user's profile
   useEffect(() => {
@@ -84,7 +87,7 @@ const Booking = () => {
 
     setSaving(true);
     // Persist the booking. RLS ensures user_id must match auth.uid().
-    const { error } = await supabase.from("bookings").insert([{
+    const { data: inserted, error } = await supabase.from("bookings").insert([{
       user_id: user.id,
       guest_name: fullName.trim(),
       guest_email: email.trim(),
@@ -103,12 +106,40 @@ const Booking = () => {
       discount_cents: discountAmt * 100,
       total_cents: total * 100,
       status: "confirmed",
-    }]);
+    }]).select("id").single();
     setSaving(false);
     if (error) return toast.error(error.message);
+    if (inserted?.id) setBookingId(inserted.id);
     setSubmitted(true);
     toast.success("Booking confirmed!");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Build & trigger the PDF download from the confirmed booking state.
+  const handleDownloadReceipt = () => {
+    if (!range?.from || !range?.to) return;
+    downloadReceipt({
+      bookingId: bookingId ?? "PENDING",
+      guestName: fullName,
+      guestEmail: email,
+      guestPhone: phone,
+      guestCountry: country,
+      checkIn: range.from.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }),
+      checkOut: range.to.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }),
+      nights,
+      guests,
+      pricePerNight: property.pricePerNight,
+      subtotal,
+      cleaning,
+      addons: selected.map((id) => addOns.find((a) => a.id === id)).filter(Boolean).map((a) => ({ label: a!.label, price: a!.price })),
+      discountPercent: discount,
+      discountAmount: discountAmt,
+      total,
+      promoCode: promo.trim() || undefined,
+      propertyName: property.name,
+      propertyLocation: property.location,
+      contactEmail: "savannahsafarisairbnb@gmail.com",
+    });
   };
 
   if (submitted) {
@@ -130,6 +161,9 @@ const Booking = () => {
               <p><span className="text-muted-foreground">Total:</span> ${total}</p>
             </Card>
             <div className="flex flex-wrap gap-3 justify-center">
+              <Button onClick={handleDownloadReceipt} variant="hero" size="lg">
+                <Download className="size-4" /> Download receipt (PDF)
+              </Button>
               <Button asChild variant="hero" size="lg"><Link to="/my-bookings">View my bookings</Link></Button>
               <Button onClick={() => { setSubmitted(false); setRange(undefined); }} variant="outline" size="lg">
                 Make another booking

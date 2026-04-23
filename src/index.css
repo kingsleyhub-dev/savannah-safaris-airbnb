@@ -163,3 +163,30 @@
   .fluid-h1 { font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.05; }
   .fluid-h2 { font-size: clamp(1.875rem, 4.5vw, 3rem); line-height: 1.1; }
 }
+
+/* ---------------------------------------------------------------
+   Hero logo — gentle ambient animation.
+   Rules:
+   • The wrapper handles the initial fade-in (opacity + translate only).
+   • The image itself uses an infinite "float" (translateY only).
+   • NEVER use scale/zoom on the logo so it stays a fixed size.
+   --------------------------------------------------------------- */
+@keyframes hero-logo-in {
+  0%   { opacity: 0; transform: translateY(-12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-logo-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.animate-hero-logo-in {
+  animation: hero-logo-in 900ms ease-out both;
+}
+.hero-logo-float {
+  animation: hero-logo-float 5s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-logo-in,
+  .hero-logo-float { animation: none !important; }
+}

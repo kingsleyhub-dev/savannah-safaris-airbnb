@@ -29,20 +29,32 @@ const MediaLibrary = () => {
 
   useEffect(() => { load(); }, []);
 
-  const handleUpload = async (files: FileList) => {
+  /**
+   * Fire-and-forget parallel uploads.
+   * - Files upload concurrently (Promise.all) so 5 small images don't queue serially.
+   * - The grid refreshes once all uploads settle, but the input is freed instantly
+   *   so the admin can keep browsing without UI lag.
+   */
+  const handleUpload = (files: FileList) => {
+    const list = Array.from(files);
+    if (inputRef.current) inputRef.current.value = "";
     setUploading(true);
-    for (const file of Array.from(files)) {
-      if (file.size > 50 * 1024 * 1024) { toast.error(`${file.name}: max 50MB`); continue; }
+    toast.info(`Uploading ${list.length} file${list.length === 1 ? "" : "s"}…`);
+
+    const tasks = list.map(async (file) => {
+      if (file.size > 50 * 1024 * 1024) { toast.error(`${file.name}: max 50MB`); return; }
       const isVideo = file.type.startsWith("video/");
       const isImage = file.type.startsWith("image/");
-      if (!isVideo && !isImage) { toast.error(`${file.name}: unsupported type`); continue; }
+      if (!isVideo && !isImage) { toast.error(`${file.name}: unsupported type`); return; }
 
       const folder = isVideo ? "videos" : "images";
       const ext = file.name.split(".").pop();
       const path = `${folder}/${crypto.randomUUID()}.${ext}`;
 
-      const { error: upErr } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
-      if (upErr) { toast.error(`${file.name}: ${upErr.message}`); continue; }
+      const { error: upErr } = await supabase.storage
+        .from("media")
+        .upload(path, file, { contentType: file.type, cacheControl: "3600" });
+      if (upErr) { toast.error(`${file.name}: ${upErr.message}`); return; }
 
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
       const { data: { user } } = await supabase.auth.getUser();
@@ -51,13 +63,15 @@ const MediaLibrary = () => {
         storage_path: path, public_url: publicUrl, kind: isVideo ? "video" : "image",
         filename: file.name, mime_type: file.type, size_bytes: file.size, uploaded_by: user?.id,
       });
-      if (dbErr) { toast.error(`${file.name}: ${dbErr.message}`); continue; }
-      await logAudit("upload_media", "media_asset", path, { filename: file.name });
-    }
-    setUploading(false);
-    if (inputRef.current) inputRef.current.value = "";
-    toast.success("Upload complete");
-    load();
+      if (dbErr) { toast.error(`${file.name}: ${dbErr.message}`); return; }
+      logAudit("upload_media", "media_asset", path, { filename: file.name });
+    });
+
+    Promise.allSettled(tasks).then(() => {
+      setUploading(false);
+      toast.success("Upload complete");
+      load();
+    });
   };
 
   const remove = async (asset: Asset) => {

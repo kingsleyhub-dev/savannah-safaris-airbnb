@@ -6,9 +6,10 @@ import { PageHero } from "@/components/sections/PageHero";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Users, Loader2, MapPin } from "lucide-react";
+import { CalendarDays, Users, Loader2, MapPin, Download } from "lucide-react";
 import { images, property } from "@/data/site";
 import { toast } from "sonner";
+import { downloadReceipt } from "@/lib/receipt";
 
 interface Booking {
   id: string;
@@ -17,9 +18,19 @@ interface Booking {
   nights: number;
   guests: number;
   total_cents: number;
+  subtotal_cents: number;
+  cleaning_cents: number;
+  addons_cents: number;
+  discount_cents: number;
+  discount_percent: number;
   status: string;
   created_at: string;
   guest_name: string;
+  guest_email: string;
+  guest_phone: string | null;
+  guest_country: string | null;
+  promo_code: string | null;
+  add_ons: { label: string; price: number }[] | null;
 }
 
 const fmtDate = (iso: string) =>
@@ -36,13 +47,39 @@ const MyBookings = () => {
       // RLS automatically scopes to this user's bookings only
       const { data, error } = await supabase
         .from("bookings")
-        .select("id, check_in, check_out, nights, guests, total_cents, status, created_at, guest_name")
+        .select("*")
         .order("check_in", { ascending: false });
       if (error) toast.error("Could not load bookings");
-      setBookings(data ?? []);
+      setBookings((data as any) ?? []);
       setLoading(false);
     })();
   }, [user]);
+
+  /** Build a PDF receipt from a stored booking row. */
+  const handleDownload = (b: Booking) => {
+    downloadReceipt({
+      bookingId: b.id,
+      guestName: b.guest_name,
+      guestEmail: b.guest_email,
+      guestPhone: b.guest_phone ?? undefined,
+      guestCountry: b.guest_country ?? undefined,
+      checkIn: fmtDate(b.check_in),
+      checkOut: fmtDate(b.check_out),
+      nights: b.nights,
+      guests: b.guests,
+      pricePerNight: property.pricePerNight,
+      subtotal: b.subtotal_cents / 100,
+      cleaning: b.cleaning_cents / 100,
+      addons: Array.isArray(b.add_ons) ? b.add_ons.map((a) => ({ label: a.label, price: a.price })) : [],
+      discountPercent: b.discount_percent,
+      discountAmount: b.discount_cents / 100,
+      total: b.total_cents / 100,
+      promoCode: b.promo_code ?? undefined,
+      propertyName: property.name,
+      propertyLocation: property.location,
+      contactEmail: "savannahsafarisairbnb@gmail.com",
+    });
+  };
 
   const cancelBooking = async (id: string) => {
     const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", id);
@@ -84,9 +121,14 @@ const MyBookings = () => {
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-border">
                     <span className="text-lg font-bold">${(b.total_cents / 100).toFixed(0)}</span>
-                    {b.status !== "cancelled" && new Date(b.check_in) > new Date() && (
-                      <Button variant="outline" size="sm" onClick={() => cancelBooking(b.id)}>Cancel</Button>
-                    )}
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleDownload(b)}>
+                        <Download className="size-3.5" /> Receipt
+                      </Button>
+                      {b.status !== "cancelled" && new Date(b.check_in) > new Date() && (
+                        <Button variant="outline" size="sm" onClick={() => cancelBooking(b.id)}>Cancel</Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Card>
