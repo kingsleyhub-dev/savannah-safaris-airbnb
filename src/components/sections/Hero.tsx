@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
-import homeHeroLogo from "@/assets/home-hero-logo.png";
+import homeHeroLogo from "@/assets/home-hero-logo-refined.png";
 
 export const Hero = () => {
   const { get } = useSiteContent();
@@ -20,11 +20,11 @@ export const Hero = () => {
     <div className="relative container-luxe pt-28 sm:pt-32 pb-16 sm:pb-20 text-primary-foreground w-full">
       <div className="mx-auto max-w-3xl flex flex-col items-center text-center space-y-5 sm:space-y-7">
         {/* Animated logo centerpiece — fixed size, gentle ambient float (no zoom/scale) */}
-        <div className="hero-logo-wrap animate-hero-logo-in -mb-2">
+        <div className="hero-logo-wrap animate-hero-logo-in -mb-3 w-full flex justify-center">
           <img
             src={homeHeroLogo}
             alt="Savannah Safaris"
-            className="hero-logo-float h-44 sm:h-56 md:h-64 lg:h-72 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
+            className="hero-logo-float h-56 sm:h-64 md:h-72 lg:h-[22rem] w-auto max-w-[92vw] object-contain select-none drop-shadow-[0_14px_36px_rgba(0,0,0,0.6)]"
             draggable={false}
           />
         </div>
