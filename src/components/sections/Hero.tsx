@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
-import homeHeroLogo from "@/assets/home-hero-logo-white-script.png";
+import homeHeroLogo from "@/assets/home-hero-logo-transparent.png";
 
 export const Hero = () => {
   const { get } = useSiteContent();
