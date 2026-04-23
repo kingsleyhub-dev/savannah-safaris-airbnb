@@ -9,9 +9,12 @@ import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { FAQ } from "@/components/sections/FAQ";
 import { useContactInfo, toWaNumber } from "@/hooks/useContactInfo";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
 const Contact = () => {
   const contact = useContactInfo();
+  const { get } = useSiteContent();
+  const h = (k: string, fb: string) => get("contact", "hero", k, fb);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Message sent. We'll reply within 2 hours.");
@@ -23,7 +26,12 @@ const Contact = () => {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="We'd love to host you" subtitle="Send a message, ring us, or chat on WhatsApp." image={images.living} />
+      <PageHero
+        eyebrow={h("eyebrow", "Contact")}
+        title={h("title", "We'd love to host you")}
+        subtitle={h("subtitle", "Send a message, ring us, or chat on WhatsApp.")}
+        image={resolveImage(h("image", ""), images.living)}
+      />
 
       <section className="section-padding">
         <div className="container-luxe grid lg:grid-cols-3 gap-8">
