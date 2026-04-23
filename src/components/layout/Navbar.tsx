@@ -108,7 +108,6 @@ export const Navbar = () => {
             <Link to="/booking">Book Now</Link>
           </Button>
         </div>
-        </div>
 
         <button
           aria-label="Toggle menu"
