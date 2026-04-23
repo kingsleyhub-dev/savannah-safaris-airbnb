@@ -18,13 +18,13 @@ export const Hero = () => {
 
     {/* Centered hero column */}
     <div className="relative container-luxe pt-28 sm:pt-32 pb-16 sm:pb-20 text-primary-foreground w-full">
-      <div className="mx-auto max-w-3xl flex flex-col items-center text-center space-y-6 sm:space-y-8">
+      <div className="mx-auto max-w-3xl flex flex-col items-center text-center space-y-5 sm:space-y-7">
         {/* Animated logo centerpiece — fixed size, gentle ambient float (no zoom/scale) */}
-        <div className="hero-logo-wrap animate-hero-logo-in">
+        <div className="hero-logo-wrap animate-hero-logo-in -mb-2">
           <img
             src={logoTransparent}
             alt="Savannah Safaris"
-            className="hero-logo-float h-28 sm:h-36 md:h-44 w-auto select-none drop-shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+            className="hero-logo-float h-44 sm:h-56 md:h-64 lg:h-72 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
             draggable={false}
           />
         </div>
