@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { CheckCircle2, Tag, Users, Plane, Car, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import type { DateRange } from "react-day-picker";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
 const addOns = [
   { id: "airport", label: "Airport pickup (JKIA)", price: 35, icon: Plane },
@@ -18,6 +19,9 @@ const addOns = [
 ];
 
 const Booking = () => {
+  const { get } = useSiteContent();
+  const h = (k: string, fb: string) => get("booking", "hero", k, fb);
+  const s = (k: string, fb: string) => get("booking", "summary", k, fb);
   const [range, setRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState(2);
   const [promo, setPromo] = useState("");
@@ -57,7 +61,7 @@ const Booking = () => {
   if (submitted) {
     return (
       <>
-        <PageHero eyebrow="Confirmed" title="Your stay is reserved" image={images.view} />
+        <PageHero eyebrow="Confirmed" title="Your stay is reserved" image={resolveImage(h("image", ""), images.view)} />
         <section className="section-padding">
           <div className="container-luxe max-w-2xl text-center space-y-6">
             <div className="size-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto">
@@ -83,7 +87,12 @@ const Booking = () => {
 
   return (
     <>
-      <PageHero eyebrow="Book direct" title="Reserve your stay" subtitle="Best-rate guarantee · Instant confirmation" image={images.view} />
+      <PageHero
+        eyebrow={h("eyebrow", "Book direct")}
+        title={h("title", "Reserve your stay")}
+        subtitle={h("subtitle", "Best-rate guarantee · Instant confirmation")}
+        image={resolveImage(h("image", ""), images.view)}
+      />
 
       <section className="section-padding">
         <div className="container-luxe grid lg:grid-cols-3 gap-8">
@@ -146,7 +155,7 @@ const Booking = () => {
 
           <aside className="lg:sticky lg:top-28 self-start">
             <Card className="overflow-hidden shadow-elegant">
-              <img src={images.bedroom} alt="" className="w-full aspect-[4/3] object-cover" />
+              <img src={resolveImage(s("image", ""), images.bedroom)} alt="" className="w-full aspect-[4/3] object-cover" />
               <div className="p-6 space-y-4">
                 <div>
                   <h4 className="font-display text-xl font-bold">{property.name}</h4>

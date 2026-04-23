@@ -3,9 +3,10 @@ import { images } from "@/data/site";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
 type Item = { src: string; cat: string; alt: string };
-const all: Item[] = [
+const allDefaults: Item[] = [
   { src: images.bedroom, cat: "Bedrooms", alt: "Master bedroom" },
   { src: images.bedroom2, cat: "Bedrooms", alt: "Second bedroom" },
   { src: images.living, cat: "Living Room", alt: "Sitting lounge" },
@@ -19,16 +20,27 @@ const all: Item[] = [
   { src: images.kitchen, cat: "Kitchen", alt: "Kitchen detail" },
   { src: images.view, cat: "Views", alt: "Sunset" },
 ];
-const cats = ["All", ...Array.from(new Set(all.map((i) => i.cat)))];
+const cats = ["All", ...Array.from(new Set(allDefaults.map((i) => i.cat)))];
 
 const Gallery = () => {
+  const { get } = useSiteContent();
+  const h = (k: string, fb: string) => get("gallery", "hero", k, fb);
+  const all: Item[] = allDefaults.map((d, i) => ({
+    ...d,
+    src: resolveImage(get("gallery", "grid", `image${i + 1}`, ""), d.src),
+  }));
   const [active, setActive] = useState("All");
   const [open, setOpen] = useState<string | null>(null);
   const filtered = active === "All" ? all : all.filter((i) => i.cat === active);
 
   return (
     <>
-      <PageHero eyebrow="Gallery" title="Inside a Nairobi sanctuary" subtitle="Soft light, refined details, and city views from every angle." image={images.hero} />
+      <PageHero
+        eyebrow={h("eyebrow", "Gallery")}
+        title={h("title", "Inside a Nairobi sanctuary")}
+        subtitle={h("subtitle", "Soft light, refined details, and city views from every angle.")}
+        image={resolveImage(h("image", ""), images.hero)}
+      />
 
       <section className="section-padding">
         <div className="container-luxe">

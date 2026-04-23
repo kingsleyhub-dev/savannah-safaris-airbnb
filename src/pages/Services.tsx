@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plane, Car, MapPin, UserCheck, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { CTA } from "@/components/sections/CTA";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
 const services = [
   { icon: Plane, title: "Airport Transfer", desc: "Reliable JKIA pickup & drop-off in a clean, comfortable vehicle.", price: "from $35" },
@@ -17,6 +18,9 @@ const services = [
 ];
 
 const Services = () => {
+  const { get } = useSiteContent();
+  const h = (k: string, fb: string) => get("services", "hero", k, fb);
+  const f = (k: string, fb: string) => get("services", "featured", k, fb);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Request received — Joel will be in touch within the hour.");
@@ -25,7 +29,12 @@ const Services = () => {
 
   return (
     <>
-      <PageHero eyebrow="Add-on services" title="Premium convenience, on request" subtitle="From airport pickups to chauffeured city tours — we make travel effortless." image={images.nissan} />
+      <PageHero
+        eyebrow={h("eyebrow", "Add-on services")}
+        title={h("title", "Premium convenience, on request")}
+        subtitle={h("subtitle", "From airport pickups to chauffeured city tours — we make travel effortless.")}
+        image={resolveImage(h("image", ""), images.nissan)}
+      />
 
       <section className="section-padding">
         <div className="container-luxe grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -45,16 +54,15 @@ const Services = () => {
       <section className="section-padding bg-secondary/40">
         <div className="container-luxe grid lg:grid-cols-2 gap-12 items-center">
           <div className="overflow-hidden rounded-2xl shadow-elegant">
-            <img src={images.nissan} alt="Joel's Nissan with driver" className="w-full aspect-[4/3] object-cover" />
+            <img src={resolveImage(f("image", ""), images.nissan)} alt="Joel's Nissan with driver" className="w-full aspect-[4/3] object-cover" />
           </div>
           <div className="space-y-6">
             <span className="eyebrow">— Featured service</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-balance">
-              Joel's Nissan <span className="italic font-light text-primary">with driver</span>
+              {f("title", "Joel's Nissan with driver")}
             </h2>
-            <p className="text-muted-foreground text-lg">
-              A premium chauffeured experience for guests who want to explore Nairobi or travel further afield in comfort and style.
-              Joel is friendly, punctual, and knows the city inside out.
+            <p className="text-muted-foreground text-lg whitespace-pre-line">
+              {f("body", "A premium chauffeured experience for guests who want to explore Nairobi or travel further afield in comfort and style. Joel is friendly, punctual, and knows the city inside out.")}
             </p>
             <div className="flex flex-wrap gap-2">
               {["City Trips", "Long Distance Travel", "Airport Pickup", "Safari Day Trips", "Hourly Hire"].map((tag) => (

@@ -3,8 +3,9 @@ import { Amenities } from "@/components/sections/Amenities";
 import { CTA } from "@/components/sections/CTA";
 import { images } from "@/data/site";
 import { Users, Clock, Cigarette, Dog, PartyPopper, BedDouble } from "lucide-react";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
-const rooms = [
+const roomDefaults = [
   { name: "Master Bedroom", desc: "King bed, ensuite marble bathroom, blackout drapes, city-view window.", img: images.bedroom },
   { name: "Second Bedroom", desc: "Queen bed, ensuite shower, plush linens, soft natural light.", img: images.bedroom2 },
   { name: "Sitting Lounge", desc: "Velvet seating, smart TV, fast Wi-Fi, perfect for unwinding.", img: images.living },
@@ -22,13 +23,26 @@ const rules = [
   { icon: Dog, label: "Pets on request" },
 ];
 
-const Property = () => (
+const Property = () => {
+  const { get } = useSiteContent();
+  const h = (k: string, fb: string) => get("property", "hero", k, fb);
+  const r = (k: string, fb: string) => get("property", "rooms", k, fb);
+  const ru = (k: string, fb: string) => get("property", "rules", k, fb);
+  const rooms = roomDefaults.map((d, i) => {
+    const n = i + 1;
+    return {
+      name: r(`room${n}_name`, d.name),
+      desc: r(`room${n}_desc`, d.desc),
+      img: resolveImage(r(`room${n}_image`, ""), d.img),
+    };
+  });
+  return (
   <>
     <PageHero
-      eyebrow="The Stay"
-      title="A residence designed for true comfort"
-      subtitle="Every room considered, every detail intentional."
-      image={images.living}
+      eyebrow={h("eyebrow", "The Stay")}
+      title={h("title", "A residence designed for true comfort")}
+      subtitle={h("subtitle", "Every room considered, every detail intentional.")}
+      image={resolveImage(h("image", ""), images.living)}
     />
 
     <section className="section-padding">
@@ -56,8 +70,8 @@ const Property = () => (
     <section className="section-padding bg-secondary/40">
       <div className="container-luxe max-w-4xl">
         <div className="text-center mb-12 space-y-3">
-          <span className="eyebrow">— House rules</span>
-          <h2 className="font-display text-4xl font-bold">A few simple guidelines</h2>
+          <span className="eyebrow">{ru("eyebrow", "— House rules")}</span>
+          <h2 className="font-display text-4xl font-bold">{ru("title", "A few simple guidelines")}</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rules.map(({ icon: Icon, label }) => (
@@ -72,6 +86,7 @@ const Property = () => (
 
     <CTA />
   </>
-);
+  );
+};
 
 export default Property;

@@ -3,6 +3,7 @@ import { images, nearbyPlaces } from "@/data/site";
 import * as Icons from "lucide-react";
 import { ShieldCheck, Car, Plane } from "lucide-react";
 import { CTA } from "@/components/sections/CTA";
+import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 
 const reasons = [
   { icon: ShieldCheck, title: "Safe & secure", desc: "Gated compound, 24/7 manned security and CCTV." },
@@ -10,9 +11,18 @@ const reasons = [
   { icon: Plane, title: "Great connectivity", desc: "35 min to JKIA, 10 min to CBD, 25 min to the National Park." },
 ];
 
-const Location = () => (
+const Location = () => {
+  const { get } = useSiteContent();
+  const h = (k: string, fb: string) => get("location", "hero", k, fb);
+  const r = (k: string, fb: string) => get("location", "reasons", k, fb);
+  return (
   <>
-    <PageHero eyebrow="Discover Nairobi" title="A prime address in Kilimani" subtitle="At the meeting point of city energy and natural escape." image={images.view} />
+    <PageHero
+      eyebrow={h("eyebrow", "Discover Nairobi")}
+      title={h("title", "A prime address in Kilimani")}
+      subtitle={h("subtitle", "At the meeting point of city energy and natural escape.")}
+      image={resolveImage(h("image", ""), images.view)}
+    />
 
     <section className="section-padding">
       <div className="container-luxe space-y-12">
@@ -43,8 +53,8 @@ const Location = () => (
     <section className="section-padding bg-secondary/40">
       <div className="container-luxe">
         <div className="text-center mb-12 space-y-3">
-          <span className="eyebrow">— Why guests love it</span>
-          <h2 className="font-display text-4xl font-bold">Why guests love this location</h2>
+          <span className="eyebrow">{r("eyebrow", "— Why guests love it")}</span>
+          <h2 className="font-display text-4xl font-bold">{r("title", "Why guests love this location")}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {reasons.map(({ icon: Icon, title, desc }) => (
@@ -62,6 +72,7 @@ const Location = () => (
 
     <CTA />
   </>
-);
+  );
+};
 
 export default Location;
