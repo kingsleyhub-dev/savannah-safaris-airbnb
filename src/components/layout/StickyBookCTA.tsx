@@ -25,7 +25,7 @@ export const StickyBookCTA = () => {
     <Link
       to="/booking"
       onClick={handleClick}
-      className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-5 py-3.5 rounded-full bg-primary text-primary-foreground shadow-elegant hover:bg-primary-glow hover:scale-105 transition-smooth font-medium text-sm"
+      className="fixed bottom-4 right-4 z-40 inline-flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-elegant transition-smooth hover:bg-primary-glow hover:scale-105 sm:bottom-6 sm:right-6 sm:px-5 sm:py-3.5"
     >
       <Calendar className="size-4" />
       <span>Book Now</span>

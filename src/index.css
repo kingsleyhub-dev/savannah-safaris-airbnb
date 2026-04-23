@@ -132,12 +132,12 @@
 
 @layer base {
   * { @apply border-border; }
-  html, body { @apply overflow-x-hidden; }
+  html, body, #root { @apply overflow-x-hidden; }
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
   h1, h2, h3, h4, h5, h6 { @apply font-display tracking-tight; }
-  img, video, iframe { @apply max-w-full h-auto; }
+  img, video, svg, iframe { @apply max-w-full h-auto; }
 }
 
 @layer utilities {
@@ -155,8 +155,8 @@
 }
 
 @layer components {
-  .container-luxe { @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
-  .section-padding { @apply py-14 sm:py-20 md:py-28; }
+  .container-luxe { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .section-padding { @apply py-12 sm:py-16 md:py-24 lg:py-28; }
   .eyebrow {
     @apply inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] font-medium text-primary;
   }
