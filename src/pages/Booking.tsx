@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { downloadReceipt } from "@/lib/receipt";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const addOns = [
   { id: "airport", label: "Airport pickup (JKIA)", price: 35, icon: Plane },
@@ -26,6 +27,7 @@ const addOns = [
 const Booking = () => {
   const { get } = useSiteContent();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const h = (k: string, fb: string) => get("booking", "hero", k, fb);
   const s = (k: string, fb: string) => get("booking", "summary", k, fb);
   const [range, setRange] = useState<DateRange | undefined>();
@@ -185,16 +187,16 @@ const Booking = () => {
       />
 
       <section className="section-padding">
-        <div className="container-luxe grid lg:grid-cols-3 gap-8">
+        <div className="container-luxe grid gap-6 lg:grid-cols-3 lg:gap-8">
           <form onSubmit={confirm} className="lg:col-span-2 space-y-8">
             <Card className="p-6 md:p-8 space-y-6">
-              <h3 className="font-display text-2xl font-bold">1. Choose your dates</h3>
+              <h3 className="font-display text-xl font-bold sm:text-2xl">1. Choose your dates</h3>
               <div className="overflow-x-auto -mx-2 sm:mx-0">
                 <Calendar
                   mode="range"
                   selected={range}
                   onSelect={setRange}
-                  numberOfMonths={typeof window !== "undefined" && window.innerWidth < 768 ? 1 : 2}
+                  numberOfMonths={isMobile ? 1 : 2}
                   disabled={{ before: new Date() }}
                   className="mx-auto"
                 />
@@ -206,26 +208,26 @@ const Booking = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2"><Tag className="size-4" /> Promo code</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Input placeholder="Try SAVANNAH10" value={promo} onChange={(e) => setPromo(e.target.value)} />
-                    <Button type="button" variant="outline" onClick={applyPromo}>Apply</Button>
+                    <Button type="button" variant="outline" onClick={applyPromo} className="sm:w-auto">Apply</Button>
                   </div>
                 </div>
               </div>
             </Card>
 
             <Card className="p-6 md:p-8 space-y-6">
-              <h3 className="font-display text-2xl font-bold">2. Add extras</h3>
+              <h3 className="font-display text-xl font-bold sm:text-2xl">2. Add extras</h3>
               <div className="space-y-3">
                 {addOns.map((a) => {
                   const Icon = a.icon;
                   const checked = selected.includes(a.id);
                   return (
-                    <label key={a.id} className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-smooth ${checked ? "border-primary bg-secondary/40" : "border-border hover:border-primary/40"}`}>
+                    <label key={a.id} className={`flex flex-wrap items-center gap-3 rounded-xl border-2 p-4 transition-smooth cursor-pointer sm:flex-nowrap sm:gap-4 ${checked ? "border-primary bg-secondary/40" : "border-border hover:border-primary/40"}`}>
                       <Checkbox checked={checked} onCheckedChange={(v) => setSelected((s) => v ? [...s, a.id] : s.filter((x) => x !== a.id))} />
                       <Icon className="size-5 text-primary" />
-                      <span className="flex-1 font-medium">{a.label}</span>
-                      <span className="text-primary font-semibold">+${a.price}</span>
+                      <span className="min-w-0 flex-1 font-medium">{a.label}</span>
+                      <span className="w-full text-left font-semibold text-primary sm:w-auto sm:text-right">+${a.price}</span>
                     </label>
                   );
                 })}
@@ -233,7 +235,7 @@ const Booking = () => {
             </Card>
 
             <Card className="p-6 md:p-8 space-y-6">
-              <h3 className="font-display text-2xl font-bold">3. Your details</h3>
+              <h3 className="font-display text-xl font-bold sm:text-2xl">3. Your details</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Full name</Label><Input required placeholder="Jane Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
                 <div className="space-y-2"><Label>Email</Label><Input required type="email" placeholder="jane@example.com" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
@@ -243,7 +245,7 @@ const Booking = () => {
             </Card>
           </form>
 
-          <aside className="lg:sticky lg:top-28 self-start">
+          <aside className="self-start lg:sticky lg:top-28">
             <Card className="overflow-hidden shadow-elegant">
               <img src={resolveImage(s("image", ""), images.bedroom)} alt="" className="w-full aspect-[4/3] object-cover" />
               <div className="p-6 space-y-4">

@@ -46,16 +46,16 @@ const Property = () => {
     />
 
     <section className="section-padding">
-      <div className="container-luxe space-y-16">
+      <div className="container-luxe space-y-12 sm:space-y-16">
         {rooms.map((r, i) => (
-          <div key={r.name} className={`grid lg:grid-cols-2 gap-10 items-center ${i % 2 ? "lg:[&>*:first-child]:order-2" : ""}`}>
+          <div key={r.name} className={`grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-10 ${i % 2 ? "lg:[&>*:first-child]:order-2" : ""}`}>
             <div className="overflow-hidden rounded-2xl shadow-elegant">
               <img src={r.img} alt={r.name} loading="lazy" className="w-full aspect-[4/3] object-cover hover:scale-105 transition-elegant" />
             </div>
             <div className="space-y-4">
               <span className="eyebrow">— Room 0{i + 1}</span>
-              <h2 className="font-display text-4xl font-bold">{r.name}</h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">{r.desc}</p>
+              <h2 className="font-display text-3xl font-bold sm:text-4xl">{r.name}</h2>
+              <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">{r.desc}</p>
               <div className="flex items-center gap-2 text-sm text-primary">
                 <BedDouble className="size-4" /> Premium furnishings · Daily housekeeping available
               </div>
@@ -71,7 +71,7 @@ const Property = () => {
       <div className="container-luxe max-w-4xl">
         <div className="text-center mb-12 space-y-3">
           <span className="eyebrow">{ru("eyebrow", "— House rules")}</span>
-          <h2 className="font-display text-4xl font-bold">{ru("title", "A few simple guidelines")}</h2>
+          <h2 className="font-display text-3xl font-bold sm:text-4xl">{ru("title", "A few simple guidelines")}</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rules.map(({ icon: Icon, label }) => (
