@@ -14,6 +14,10 @@ import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import { SiteLayout } from "./components/layout/SiteLayout.tsx";
 import { SiteContentProvider } from "./hooks/useSiteContent.tsx";
+import SignIn from "./pages/SignIn.tsx";
+import SignUp from "./pages/SignUp.tsx";
+import MyBookings from "./pages/MyBookings.tsx";
+import { ProtectedGuestRoute } from "./components/auth/ProtectedGuestRoute.tsx";
 
 // Admin
 import { AuthProvider } from "./admin/auth/AuthProvider.tsx";
@@ -44,11 +48,20 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/property" element={<Property />} />
               <Route path="/gallery" element={<Gallery />} />
-              <Route path="/booking" element={<Booking />} />
               <Route path="/services" element={<Services />} />
               <Route path="/location" element={<Location />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+
+              {/* Guest auth routes (public) */}
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+
+              {/* Routes that require a signed-in guest */}
+              <Route element={<ProtectedGuestRoute />}>
+                <Route path="/booking" element={<Booking />} />
+                <Route path="/my-bookings" element={<MyBookings />} />
+              </Route>
             </Route>
 
             {/* Admin portal */}
