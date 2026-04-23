@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
-import homeHeroLogo from "@/assets/home-hero-logo-refined.png";
+import homeHeroLogo from "@/assets/home-hero-logo-white-script.png";
 
 export const Hero = () => {
   const { get } = useSiteContent();
@@ -24,7 +24,7 @@ export const Hero = () => {
           <img
             src={homeHeroLogo}
             alt="Savannah Safaris"
-            className="hero-logo-float h-56 sm:h-64 md:h-72 lg:h-[22rem] w-auto max-w-[92vw] object-contain select-none drop-shadow-[0_14px_36px_rgba(0,0,0,0.6)]"
+            className="hero-logo-float h-60 sm:h-72 md:h-80 lg:h-[24rem] w-auto max-w-[94vw] object-contain select-none drop-shadow-[0_14px_36px_rgba(0,0,0,0.6)]"
             draggable={false}
           />
         </div>
