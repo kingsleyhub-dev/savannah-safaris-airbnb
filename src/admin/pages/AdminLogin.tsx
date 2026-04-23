@@ -9,23 +9,30 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useAuth } from "../auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_PORTAL_ROLES, hasRequiredRole } from "../auth/permissions";
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(72);
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, loading, signIn, resetPassword } = useAuth();
+  const { user, roles, isAdmin, loading, rolesLoading, signIn, resetPassword } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user && isAdmin) {
+    if (!loading && !rolesLoading && user && isAdmin) {
       navigate("/admin/dashboard", { replace: true });
     }
-  }, [loading, user, isAdmin, navigate]);
+  }, [loading, rolesLoading, user, isAdmin, navigate]);
+
+  useEffect(() => {
+    if (!loading && !rolesLoading && user && !hasRequiredRole(roles, ADMIN_PORTAL_ROLES)) {
+      toast.error("Your account is signed in, but it does not have admin access.");
+    }
+  }, [loading, rolesLoading, user, roles]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
