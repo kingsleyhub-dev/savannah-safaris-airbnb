@@ -15,6 +15,8 @@ const allDefaults: Item[] = [
   { src: images.dining2, cat: "Dining Area", alt: "Dining — chandelier view" },
   { src: images.dining3, cat: "Dining Area", alt: "Dining — side view" },
   { src: images.kitchen, cat: "Kitchen", alt: "Kitchen" },
+  { src: images.kitchen2, cat: "Kitchen", alt: "Kitchen — counter view" },
+  { src: images.kitchen3, cat: "Kitchen", alt: "Kitchen — wide view" },
   { src: images.bathroom, cat: "Bathrooms", alt: "Bathroom" },
   { src: images.view, cat: "Views", alt: "City view" },
   { src: images.hero, cat: "Exterior", alt: "Balcony" },
