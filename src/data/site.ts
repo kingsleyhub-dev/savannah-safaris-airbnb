@@ -2,13 +2,14 @@ import hero from "@/assets/hero.jpg";
 import bedroom from "@/assets/bedroom.jpg";
 import bedroom2 from "@/assets/bedroom2.jpg";
 import living from "@/assets/living.jpg";
+import living2 from "@/assets/living2.jpg";
 import kitchen from "@/assets/kitchen.jpg";
 import dining from "@/assets/dining.jpg";
 import bathroom from "@/assets/bathroom.jpg";
 import view from "@/assets/view.jpg";
 import nissan from "@/assets/nissan.jpg";
 
-export const images = { hero, bedroom, bedroom2, living, kitchen, dining, bathroom, view, nissan };
+export const images = { hero, bedroom, bedroom2, living, living2, kitchen, dining, bathroom, view, nissan };
 
 export const property = {
   name: "Savannah Safaris Airbnb",
