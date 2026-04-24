@@ -6,6 +6,8 @@ import bedroom2 from "@/assets/bedroom2.jpg";
 import living from "@/assets/living.jpg";
 import living2 from "@/assets/living2.jpg";
 import kitchen from "@/assets/kitchen.jpg";
+import kitchen2 from "@/assets/kitchen2.jpg";
+import kitchen3 from "@/assets/kitchen3.jpg";
 import dining from "@/assets/dining.jpg";
 import dining2 from "@/assets/dining2.jpg";
 import dining3 from "@/assets/dining3.jpg";
