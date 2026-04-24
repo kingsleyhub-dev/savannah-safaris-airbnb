@@ -9,6 +9,8 @@ type Item = { src: string; cat: string; alt: string };
 const allDefaults: Item[] = [
   { src: images.bedroom, cat: "Bedrooms", alt: "Master bedroom" },
   { src: images.bedroom2, cat: "Bedrooms", alt: "Second bedroom" },
+  { src: images.bedroom2Alt1, cat: "Bedrooms", alt: "Second bedroom — wide view" },
+  { src: images.bedroom2Alt2, cat: "Bedrooms", alt: "Second bedroom — headboard detail" },
   { src: images.living, cat: "Living Room", alt: "Sitting lounge" },
   { src: images.living2, cat: "Living Room", alt: "Lounge — wide view" },
   { src: images.dining, cat: "Dining Area", alt: "Dining" },
