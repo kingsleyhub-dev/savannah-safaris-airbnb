@@ -10,15 +10,16 @@ const allDefaults: Item[] = [
   { src: images.bedroom, cat: "Bedrooms", alt: "Master bedroom" },
   { src: images.bedroom2, cat: "Bedrooms", alt: "Second bedroom" },
   { src: images.living, cat: "Living Room", alt: "Sitting lounge" },
+  { src: images.living2, cat: "Living Room", alt: "Lounge — wide view" },
   { src: images.dining, cat: "Dining Area", alt: "Dining" },
+  { src: images.dining2, cat: "Dining Area", alt: "Dining — chandelier view" },
+  { src: images.dining3, cat: "Dining Area", alt: "Dining — side view" },
   { src: images.kitchen, cat: "Kitchen", alt: "Kitchen" },
   { src: images.bathroom, cat: "Bathrooms", alt: "Bathroom" },
   { src: images.view, cat: "Views", alt: "City view" },
   { src: images.hero, cat: "Exterior", alt: "Balcony" },
-  { src: images.bedroom, cat: "Bedrooms", alt: "Bedroom detail" },
-  { src: images.living, cat: "Living Room", alt: "Lounge detail" },
-  { src: images.kitchen, cat: "Kitchen", alt: "Kitchen detail" },
-  { src: images.view, cat: "Views", alt: "Sunset" },
+  { src: images.bedroomAlt1, cat: "Bedrooms", alt: "Bedroom — wider view" },
+  { src: images.bedroomAlt2, cat: "Bedrooms", alt: "Bedroom — detail" },
 ];
 const cats = ["All", ...Array.from(new Set(allDefaults.map((i) => i.cat)))];
 
