@@ -6,6 +6,8 @@ export const CONTENT_MANAGER_ROLES: AdminRole[] = ["super_admin", "admin", "edit
 
 export const MEDIA_MANAGER_ROLES: AdminRole[] = ["super_admin", "admin"];
 
+export const USER_MANAGER_ROLES: AdminRole[] = ["super_admin", "admin"];
+
 export const SETTINGS_MANAGER_ROLES: AdminRole[] = ["super_admin", "admin"];
 
 export const hasRequiredRole = (roles: AdminRole[], allowedRoles: AdminRole[]) =>
