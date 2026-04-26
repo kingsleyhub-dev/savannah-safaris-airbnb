@@ -174,6 +174,7 @@ export type Database = {
           alt_text: string | null
           created_at: string
           filename: string
+          gallery_category: string | null
           gallery_sort_order: number
           id: string
           is_published: boolean
@@ -190,6 +191,7 @@ export type Database = {
           alt_text?: string | null
           created_at?: string
           filename: string
+          gallery_category?: string | null
           gallery_sort_order?: number
           id?: string
           is_published?: boolean
@@ -206,6 +208,7 @@ export type Database = {
           alt_text?: string | null
           created_at?: string
           filename?: string
+          gallery_category?: string | null
           gallery_sort_order?: number
           id?: string
           is_published?: boolean
@@ -273,6 +276,27 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      receipt_downloads: {
+        Row: {
+          booking_id: string
+          downloaded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          booking_id: string
+          downloaded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string
+          downloaded_at?: string
+          id?: string
           user_id?: string
         }
         Relationships: []

@@ -31,7 +31,8 @@ import PageEditor from "./admin/pages/PageEditor.tsx";
 import MediaLibrary from "./admin/pages/MediaLibrary.tsx";
 import ContactSettings from "./admin/pages/ContactSettings.tsx";
 import SiteSettings from "./admin/pages/SiteSettings.tsx";
-import { CONTENT_MANAGER_ROLES, MEDIA_MANAGER_ROLES, SETTINGS_MANAGER_ROLES } from "./admin/auth/permissions.ts";
+import UsersPage from "./admin/pages/UsersPage.tsx";
+import { CONTENT_MANAGER_ROLES, MEDIA_MANAGER_ROLES, SETTINGS_MANAGER_ROLES, USER_MANAGER_ROLES } from "./admin/auth/permissions.ts";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,9 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route path="/admin/dashboard" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
+                <Route element={<ProtectedRoute allowedRoles={USER_MANAGER_ROLES} />}>
+                  <Route path="users" element={<UsersPage />} />
+                </Route>
                 <Route element={<ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES} />}>
                   <Route path="pages" element={<PagesList />} />
                   <Route path="pages/:slug" element={<PageEditor />} />
