@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { images } from "@/data/site";
 import { ArrowRight } from "lucide-react";
 import { useSiteContent } from "@/hooks/useSiteContent";
@@ -14,6 +15,31 @@ const tiles = [
 export const GalleryPreview = () => {
   const { get } = useSiteContent();
   const g = (k: string, fb: string) => get("home", "gallery_preview", k, fb);
+  const tileRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [tileMetrics, setTileMetrics] = useState<Record<number, { width: number; height: number; colSpan: string; rowSpan: string }>>({});
+
+  useEffect(() => {
+    const updateMetrics = () => {
+      const next = tileRefs.current.reduce<Record<number, { width: number; height: number; colSpan: string; rowSpan: string }>>((acc, tile, index) => {
+        if (!tile) return acc;
+        const rect = tile.getBoundingClientRect();
+        const styles = window.getComputedStyle(tile);
+        acc[index] = {
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          colSpan: styles.gridColumnEnd.replace("span ", "col "),
+          rowSpan: styles.gridRowEnd.replace("span ", "row "),
+        };
+        return acc;
+      }, {});
+      setTileMetrics(next);
+    };
+
+    updateMetrics();
+    window.addEventListener("resize", updateMetrics);
+    return () => window.removeEventListener("resize", updateMetrics);
+  }, []);
+
   return (
   <section className="section-padding">
     <div className="container-luxe">
@@ -31,9 +57,18 @@ export const GalleryPreview = () => {
         {tiles.map((t, i) => (
           <div
             key={i}
+            ref={(node) => {
+              tileRefs.current[i] = node;
+            }}
             className={`relative overflow-hidden rounded-2xl group cursor-pointer ${t.className ?? ""}`}
           >
             <img src={t.src} alt={t.label} loading="lazy" className="w-full h-full object-cover transition-elegant group-hover:scale-110" />
+            {tileMetrics[i] && (
+              <div className="absolute left-3 top-3 z-10 rounded-md bg-background/90 px-2 py-1 font-mono text-[11px] leading-tight text-foreground shadow-lg ring-1 ring-border backdrop-blur-sm sm:hidden">
+                <div>{tileMetrics[i].width}×{tileMetrics[i].height}</div>
+                <div>{tileMetrics[i].colSpan} · {tileMetrics[i].rowSpan}</div>
+              </div>
+            )}
             <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/70 via-transparent to-transparent p-4 opacity-100 transition-smooth group-hover:opacity-100 sm:p-6 lg:opacity-0">
               <span className="text-lg font-display text-primary-foreground sm:text-xl">{t.label}</span>
             </div>
