@@ -550,6 +550,20 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
                 <Upload className="size-3" /> Upload poster
               </Button>
             </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 w-full text-xs gap-1"
+              disabled={posterBusy}
+              title="Create an AI-styled poster using your brand palette"
+              onClick={async () => {
+                setPosterBusy(true);
+                await onGeneratePoster(asset);
+                setPosterBusy(false);
+              }}
+            >
+              {posterBusy ? <Loader2 className="size-3 animate-spin" /> : <Wand2 className="size-3" />} Generate poster (AI)
+            </Button>
           </div>
         )}
 
