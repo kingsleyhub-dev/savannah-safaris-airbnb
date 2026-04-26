@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileText, Image as ImageIcon, Phone, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CONTENT_MANAGER_ROLES, SETTINGS_MANAGER_ROLES, hasRequiredRole } from "@/admin/auth/permissions";
+import { CONTENT_MANAGER_ROLES, MEDIA_MANAGER_ROLES, SETTINGS_MANAGER_ROLES, hasRequiredRole } from "@/admin/auth/permissions";
 
 const nav = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/dashboard/pages", label: "Pages", icon: FileText, allowedRoles: CONTENT_MANAGER_ROLES },
-  { to: "/admin/dashboard/media", label: "Media Library", icon: ImageIcon, allowedRoles: CONTENT_MANAGER_ROLES },
+  { to: "/admin/dashboard/media", label: "Media Library", icon: ImageIcon, allowedRoles: MEDIA_MANAGER_ROLES },
   { to: "/admin/dashboard/contact", label: "Contact", icon: Phone, allowedRoles: SETTINGS_MANAGER_ROLES },
   { to: "/admin/dashboard/settings", label: "Settings", icon: Settings, allowedRoles: SETTINGS_MANAGER_ROLES },
 ];
