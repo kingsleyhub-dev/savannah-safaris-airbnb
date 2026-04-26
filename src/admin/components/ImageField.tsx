@@ -46,7 +46,7 @@ export const ImageField = ({ value, onChange }: Props) => {
       const path = `images/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("media")
-        .upload(path, file, { contentType: file.type, cacheControl: "3600" });
+        .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
       if (upErr) {
         setUploading(false);
         setPreview(null);
