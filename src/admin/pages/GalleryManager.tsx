@@ -10,6 +10,7 @@ import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, 
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import { captureVideoFrame, uploadPoster } from "../lib/videoPoster";
+import { optimizeImage } from "@/lib/imageTransform";
 import {
   DndContext,
   closestCenter,
@@ -62,6 +63,7 @@ const GalleryManager = () => {
   const load = async () => {
     const { data, error } = await (supabase.from("media_assets") as any)
       .select("id, storage_path, public_url, kind, filename, alt_text, show_in_gallery, is_published, gallery_category, gallery_sort_order, published_at, poster_url, poster_path")
+      .is("deleted_at", null)
       .order("gallery_sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
@@ -93,7 +95,7 @@ const GalleryManager = () => {
 
       const { error: upErr } = await supabase.storage
         .from("media")
-        .upload(path, file, { contentType: file.type, cacheControl: "3600" });
+        .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
       if (upErr) { toast.error(`${file.name}: ${upErr.message}`); return; }
 
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
@@ -150,11 +152,14 @@ const GalleryManager = () => {
   };
 
   const remove = async (asset: Asset) => {
-    if (!confirm(`Delete ${asset.filename}? This cannot be undone.`)) return;
-    await supabase.storage.from("media").remove([asset.storage_path]);
-    await supabase.from("media_assets").delete().eq("id", asset.id);
-    await logAudit("delete_gallery_media", "media_asset", asset.id, { filename: asset.filename });
-    toast.success("Deleted");
+    if (!confirm(`Move ${asset.filename} to trash? It will be hidden from the site but you can restore it later from the database.`)) return;
+    // Soft delete: keep file + row, mark deleted_at, take it offline.
+    const { error } = await (supabase.from("media_assets") as any)
+      .update({ deleted_at: new Date().toISOString(), is_published: false, show_in_gallery: false })
+      .eq("id", asset.id);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("soft_delete_gallery_media", "media_asset", asset.id, { filename: asset.filename });
+    toast.success("Moved to trash");
     setAssets((curr) => curr.filter((a) => a.id !== asset.id));
   };
 
@@ -172,7 +177,7 @@ const GalleryManager = () => {
     const folder = isVideo ? "videos" : "images";
     const ext = file.name.split(".").pop();
     const newPath = `${folder}/${crypto.randomUUID()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("media").upload(newPath, file, { contentType: file.type, cacheControl: "3600" });
+    const { error: upErr } = await supabase.storage.from("media").upload(newPath, file, { contentType: file.type, cacheControl: "31536000" });
     if (upErr) { toast.error(upErr.message); return; }
     const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(newPath);
     const updates: any = {
@@ -426,7 +431,7 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
     <Card ref={setNodeRef} style={style} className="overflow-hidden">
       <div className="aspect-video bg-muted relative">
         {asset.kind === "image" ? (
-          <img src={asset.public_url} alt={asset.alt_text ?? asset.filename} loading="lazy" className="w-full h-full object-cover" />
+          <img src={optimizeImage(asset.public_url, { width: 480, height: 270, quality: 70 })} alt={asset.alt_text ?? asset.filename} loading="lazy" className="w-full h-full object-cover" />
         ) : (
           <video
             src={asset.public_url}
@@ -502,7 +507,7 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
             <div className="flex items-center gap-2">
               <div className="size-12 shrink-0 rounded bg-black overflow-hidden grid place-items-center">
                 {asset.poster_url ? (
-                  <img src={asset.poster_url} alt="Poster" className="size-full object-cover" />
+                  <img src={optimizeImage(asset.poster_url, { width: 96, height: 96, quality: 70 })} alt="Poster" className="size-full object-cover" />
                 ) : (
                   <ImageIcon className="size-4 text-muted-foreground" />
                 )}
