@@ -10,6 +10,7 @@ import { CalendarDays, Users, Loader2, MapPin, Download } from "lucide-react";
 import { images, property } from "@/data/site";
 import { toast } from "sonner";
 import { downloadReceipt } from "@/lib/receipt";
+import { logReceiptDownload } from "@/lib/receiptTracking";
 
 interface Booking {
   id: string;
@@ -40,6 +41,7 @@ const MyBookings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -56,29 +58,37 @@ const MyBookings = () => {
   }, [user]);
 
   /** Build a PDF receipt from a stored booking row. */
-  const handleDownload = (b: Booking) => {
-    downloadReceipt({
-      bookingId: b.id,
-      guestName: b.guest_name,
-      guestEmail: b.guest_email,
-      guestPhone: b.guest_phone ?? undefined,
-      guestCountry: b.guest_country ?? undefined,
-      checkIn: fmtDate(b.check_in),
-      checkOut: fmtDate(b.check_out),
-      nights: b.nights,
-      guests: b.guests,
-      pricePerNight: property.pricePerNight,
-      subtotal: b.subtotal_cents / 100,
-      cleaning: b.cleaning_cents / 100,
-      addons: Array.isArray(b.add_ons) ? b.add_ons.map((a) => ({ label: a.label, price: a.price })) : [],
-      discountPercent: b.discount_percent,
-      discountAmount: b.discount_cents / 100,
-      total: b.total_cents / 100,
-      promoCode: b.promo_code ?? undefined,
-      propertyName: property.name,
-      propertyLocation: property.location,
-      contactEmail: "savannahsafarisairbnb@gmail.com",
-    });
+  const handleDownload = async (b: Booking) => {
+    setDownloadingId(b.id);
+    try {
+      await logReceiptDownload(user?.id, b.id);
+      downloadReceipt({
+        bookingId: b.id,
+        guestName: b.guest_name,
+        guestEmail: b.guest_email,
+        guestPhone: b.guest_phone ?? undefined,
+        guestCountry: b.guest_country ?? undefined,
+        checkIn: fmtDate(b.check_in),
+        checkOut: fmtDate(b.check_out),
+        nights: b.nights,
+        guests: b.guests,
+        pricePerNight: property.pricePerNight,
+        subtotal: b.subtotal_cents / 100,
+        cleaning: b.cleaning_cents / 100,
+        addons: Array.isArray(b.add_ons) ? b.add_ons.map((a) => ({ label: a.label, price: a.price })) : [],
+        discountPercent: b.discount_percent,
+        discountAmount: b.discount_cents / 100,
+        total: b.total_cents / 100,
+        promoCode: b.promo_code ?? undefined,
+        propertyName: property.name,
+        propertyLocation: property.location,
+        contactEmail: "savannahsafarisairbnb@gmail.com",
+      });
+    } catch (error: any) {
+      toast.error(error.message ?? "Could not log receipt download");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const cancelBooking = async (id: string) => {
@@ -122,8 +132,8 @@ const MyBookings = () => {
                   <div className="flex items-center justify-between pt-3 border-t border-border">
                     <span className="text-lg font-bold">${(b.total_cents / 100).toFixed(0)}</span>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleDownload(b)}>
-                        <Download className="size-3.5" /> Receipt
+                      <Button variant="outline" size="sm" onClick={() => handleDownload(b)} disabled={downloadingId === b.id}>
+                        {downloadingId === b.id ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />} Receipt
                       </Button>
                       {b.status !== "cancelled" && new Date(b.check_in) > new Date() && (
                         <Button variant="outline" size="sm" onClick={() => cancelBooking(b.id)}>Cancel</Button>
