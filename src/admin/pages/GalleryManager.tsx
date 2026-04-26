@@ -78,10 +78,11 @@ const GalleryManager = () => {
     const baseSort = (assets[assets.length - 1]?.gallery_sort_order ?? 0) + 10;
 
     const tasks = list.map(async (file, idx) => {
-      if (file.size > 50 * 1024 * 1024) { toast.error(`${file.name}: max 50MB`); return; }
       const isVideo = file.type.startsWith("video/");
       const isImage = file.type.startsWith("image/");
       if (!isVideo && !isImage) { toast.error(`${file.name}: unsupported type`); return; }
+      const maxBytes = isVideo ? 100 * 1024 * 1024 : 50 * 1024 * 1024;
+      if (file.size > maxBytes) { toast.error(`${file.name}: max ${isVideo ? "100MB" : "50MB"}`); return; }
 
       const folder = isVideo ? "videos" : "images";
       const ext = file.name.split(".").pop();
