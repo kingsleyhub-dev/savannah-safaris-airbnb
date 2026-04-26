@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw } from "lucide-react";
+import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
+import { captureVideoFrame, uploadPoster } from "../lib/videoPoster";
 import {
   DndContext,
   closestCenter,
@@ -41,6 +42,8 @@ interface Asset {
   gallery_category: string | null;
   gallery_sort_order: number;
   published_at: string | null;
+  poster_url: string | null;
+  poster_path: string | null;
 }
 
 const GalleryManager = () => {
@@ -58,7 +61,7 @@ const GalleryManager = () => {
 
   const load = async () => {
     const { data, error } = await (supabase.from("media_assets") as any)
-      .select("id, storage_path, public_url, kind, filename, alt_text, show_in_gallery, is_published, gallery_category, gallery_sort_order, published_at")
+      .select("id, storage_path, public_url, kind, filename, alt_text, show_in_gallery, is_published, gallery_category, gallery_sort_order, published_at, poster_url, poster_path")
       .order("gallery_sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
@@ -96,6 +99,17 @@ const GalleryManager = () => {
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
       const { data: { user } } = await userPromise;
 
+      // Auto-capture a poster frame for videos
+      let poster_url: string | null = null;
+      let poster_path: string | null = null;
+      if (isVideo) {
+        const blob = await captureVideoFrame(file, 1).catch(() => null);
+        if (blob) {
+          const uploaded = await uploadPoster(blob);
+          if (uploaded) { poster_url = uploaded.url; poster_path = uploaded.path; }
+        }
+      }
+
       return {
         storage_path: path,
         public_url: publicUrl,
@@ -107,6 +121,8 @@ const GalleryManager = () => {
         show_in_gallery: true,
         is_published: false,
         gallery_sort_order: baseSort + idx * 10,
+        poster_url,
+        poster_path,
       };
     });
 
@@ -159,23 +175,73 @@ const GalleryManager = () => {
     const { error: upErr } = await supabase.storage.from("media").upload(newPath, file, { contentType: file.type, cacheControl: "3600" });
     if (upErr) { toast.error(upErr.message); return; }
     const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(newPath);
-    const { error: dbErr } = await (supabase.from("media_assets") as any).update({
+    const updates: any = {
       storage_path: newPath,
       public_url: publicUrl,
       filename: file.name,
       mime_type: file.type,
       size_bytes: file.size,
-    }).eq("id", asset.id);
+    };
+
+    // Regenerate poster when replacing a video
+    let oldPosterPath: string | null = null;
+    if (isVideo) {
+      const blob = await captureVideoFrame(file, 1).catch(() => null);
+      if (blob) {
+        const uploaded = await uploadPoster(blob);
+        if (uploaded) {
+          updates.poster_url = uploaded.url;
+          updates.poster_path = uploaded.path;
+          oldPosterPath = asset.poster_path;
+        }
+      }
+    }
+
+    const { error: dbErr } = await (supabase.from("media_assets") as any).update(updates).eq("id", asset.id);
     if (dbErr) {
       await supabase.storage.from("media").remove([newPath]);
+      if (updates.poster_path) await supabase.storage.from("media").remove([updates.poster_path]);
       toast.error(dbErr.message);
       return;
     }
-    // Best-effort cleanup of the previous file
+    // Best-effort cleanup of the previous file(s)
     await supabase.storage.from("media").remove([asset.storage_path]);
+    if (oldPosterPath) await supabase.storage.from("media").remove([oldPosterPath]);
     await logAudit("replace_gallery_media", "media_asset", asset.id, { old: asset.filename, new: file.name });
-    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, storage_path: newPath, public_url: publicUrl, filename: file.name } : a));
+    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, ...updates } : a));
     toast.success("Replaced");
+  };
+
+  const setPoster = async (asset: Asset, blob: Blob) => {
+    const uploaded = await uploadPoster(blob);
+    if (!uploaded) { toast.error("Poster upload failed"); return; }
+    const oldPath = asset.poster_path;
+    const { error } = await (supabase.from("media_assets") as any)
+      .update({ poster_url: uploaded.url, poster_path: uploaded.path })
+      .eq("id", asset.id);
+    if (error) {
+      await supabase.storage.from("media").remove([uploaded.path]);
+      toast.error(error.message);
+      return;
+    }
+    if (oldPath) await supabase.storage.from("media").remove([oldPath]);
+    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, poster_url: uploaded.url, poster_path: uploaded.path } : a));
+    await logAudit("update_video_poster", "media_asset", asset.id, {});
+    toast.success("Poster updated");
+  };
+
+  const recapturePoster = async (asset: Asset) => {
+    toast.info("Capturing frame…");
+    const blob = await captureVideoFrame(asset.public_url, 1).catch(() => null);
+    if (!blob) { toast.error("Could not capture frame (CORS?)"); return; }
+    await setPoster(asset, blob);
+  };
+
+  const uploadPosterFile = async (asset: Asset, file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Poster must be an image"); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error("Poster max 10MB"); return; }
+    toast.info("Uploading poster…");
+    await setPoster(asset, file);
   };
 
   const autoCaption = async (asset: Asset): Promise<string | null> => {
@@ -289,7 +355,7 @@ const GalleryManager = () => {
           <SortableContext items={visible.map((a) => a.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {visible.map((a) => (
-                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} />
+                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} onRecapturePoster={recapturePoster} onUploadPoster={uploadPosterFile} />
               ))}
             </div>
           </SortableContext>
@@ -309,13 +375,17 @@ interface CardProps {
   onRemove: (asset: Asset) => void;
   onReplace: (asset: Asset, file: File) => Promise<void>;
   onAutoCaption: (asset: Asset) => Promise<string | null>;
+  onRecapturePoster: (asset: Asset) => Promise<void>;
+  onUploadPoster: (asset: Asset, file: File) => Promise<void>;
 }
 
-const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption }: CardProps) => {
+const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption, onRecapturePoster, onUploadPoster }: CardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
   const [altText, setAltText] = useState(asset.alt_text ?? "");
   const [captioning, setCaptioning] = useState(false);
+  const [posterBusy, setPosterBusy] = useState(false);
   const replaceInputRef = useRef<HTMLInputElement>(null);
+  const posterInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setAltText(asset.alt_text ?? ""); }, [asset.alt_text]);
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -329,7 +399,14 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
         {asset.kind === "image" ? (
           <img src={asset.public_url} alt={asset.alt_text ?? asset.filename} loading="lazy" className="w-full h-full object-cover" />
         ) : (
-          <video src={asset.public_url} className="w-full h-full bg-black object-contain" preload="metadata" playsInline muted />
+          <video
+            src={asset.public_url}
+            poster={asset.poster_url ?? undefined}
+            className="w-full h-full bg-black object-contain"
+            preload="metadata"
+            playsInline
+            muted
+          />
         )}
         <button
           {...attributes}
@@ -390,6 +467,62 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
             </Button>
           )}
         </div>
+
+        {asset.kind === "video" && (
+          <div className="rounded-md border border-dashed border-input p-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="size-12 shrink-0 rounded bg-black overflow-hidden grid place-items-center">
+                {asset.poster_url ? (
+                  <img src={asset.poster_url} alt="Poster" className="size-full object-cover" />
+                ) : (
+                  <ImageIcon className="size-4 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium">Poster thumbnail</p>
+                <p className="text-[10px] text-muted-foreground">Cover frame shown before playback.</p>
+              </div>
+            </div>
+            <input
+              ref={posterInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (posterInputRef.current) posterInputRef.current.value = "";
+                if (!f) return;
+                setPosterBusy(true);
+                await onUploadPoster(asset, f);
+                setPosterBusy(false);
+              }}
+            />
+            <div className="grid grid-cols-2 gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={posterBusy}
+                onClick={async () => {
+                  setPosterBusy(true);
+                  await onRecapturePoster(asset);
+                  setPosterBusy(false);
+                }}
+              >
+                {posterBusy ? <Loader2 className="size-3 animate-spin" /> : <Camera className="size-3" />} Capture frame
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={posterBusy}
+                onClick={() => posterInputRef.current?.click()}
+              >
+                <Upload className="size-3" /> Upload poster
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-md bg-secondary/60 p-2 space-y-2">
           <div className="flex items-center justify-between">

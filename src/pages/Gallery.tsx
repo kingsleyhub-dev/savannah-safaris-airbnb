@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 type Item = { src: string; cat: string; alt: string };
-type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null; gallery_category: string | null };
+type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null; gallery_category: string | null; poster_url: string | null };
 
 // Each entry maps a category section to its default photos. The section slug
 // (e.g. "bedrooms") + key (e.g. "image1") is what admins edit in the portal.
@@ -73,7 +73,7 @@ const Gallery = () => {
   const filtered = active === "All" ? photoItems : photoItems.filter((i) => i.cat === active);
 
   useEffect(() => {
-    (supabase.from("media_assets") as any).select("id, public_url, kind, filename, alt_text, gallery_category").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }: { data: MediaAsset[] | null }) => {
+    (supabase.from("media_assets") as any).select("id, public_url, kind, filename, alt_text, gallery_category, poster_url").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }: { data: MediaAsset[] | null }) => {
       setPublishedMedia((data as MediaAsset[]) ?? []);
     });
   }, []);
@@ -134,6 +134,7 @@ const Gallery = () => {
                       <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-elegant">
                         <video
                           src={video.public_url}
+                          poster={video.poster_url ?? undefined}
                           controls
                           playsInline
                           preload="metadata"
