@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { downloadReceipt } from "@/lib/receipt";
+import { logReceiptDownload } from "@/lib/receiptTracking";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const addOns = [
@@ -37,6 +38,7 @@ const Booking = () => {
   const [selected, setSelected] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -118,30 +120,38 @@ const Booking = () => {
   };
 
   // Build & trigger the PDF download from the confirmed booking state.
-  const handleDownloadReceipt = () => {
+  const handleDownloadReceipt = async () => {
     if (!range?.from || !range?.to) return;
-    downloadReceipt({
-      bookingId: bookingId ?? "PENDING",
-      guestName: fullName,
-      guestEmail: email,
-      guestPhone: phone,
-      guestCountry: country,
-      checkIn: range.from.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }),
-      checkOut: range.to.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }),
-      nights,
-      guests,
-      pricePerNight: property.pricePerNight,
-      subtotal,
-      cleaning,
-      addons: selected.map((id) => addOns.find((a) => a.id === id)).filter(Boolean).map((a) => ({ label: a!.label, price: a!.price })),
-      discountPercent: discount,
-      discountAmount: discountAmt,
-      total,
-      promoCode: promo.trim() || undefined,
-      propertyName: property.name,
-      propertyLocation: property.location,
-      contactEmail: "savannahsafarisairbnb@gmail.com",
-    });
+    setDownloadingReceipt(true);
+    try {
+      await logReceiptDownload(user?.id, bookingId);
+      downloadReceipt({
+        bookingId: bookingId ?? "PENDING",
+        guestName: fullName,
+        guestEmail: email,
+        guestPhone: phone,
+        guestCountry: country,
+        checkIn: range.from.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }),
+        checkOut: range.to.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }),
+        nights,
+        guests,
+        pricePerNight: property.pricePerNight,
+        subtotal,
+        cleaning,
+        addons: selected.map((id) => addOns.find((a) => a.id === id)).filter(Boolean).map((a) => ({ label: a!.label, price: a!.price })),
+        discountPercent: discount,
+        discountAmount: discountAmt,
+        total,
+        promoCode: promo.trim() || undefined,
+        propertyName: property.name,
+        propertyLocation: property.location,
+        contactEmail: "savannahsafarisairbnb@gmail.com",
+      });
+    } catch (error: any) {
+      toast.error(error.message ?? "Could not log receipt download");
+    } finally {
+      setDownloadingReceipt(false);
+    }
   };
 
   if (submitted) {
@@ -163,8 +173,8 @@ const Booking = () => {
               <p><span className="text-muted-foreground">Total:</span> ${total}</p>
             </Card>
             <div className="flex flex-wrap gap-3 justify-center">
-              <Button onClick={handleDownloadReceipt} variant="hero" size="lg">
-                <Download className="size-4" /> Download receipt (PDF)
+              <Button onClick={handleDownloadReceipt} variant="hero" size="lg" disabled={downloadingReceipt}>
+                {downloadingReceipt ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />} Download receipt (PDF)
               </Button>
               <Button asChild variant="hero" size="lg"><Link to="/my-bookings">View my bookings</Link></Button>
               <Button onClick={() => { setSubmitted(false); setRange(undefined); }} variant="outline" size="lg">
