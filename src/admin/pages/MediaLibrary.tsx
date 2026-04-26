@@ -72,9 +72,9 @@ const MediaLibrary = () => {
     });
 
     Promise.allSettled(tasks).then(async (results) => {
-      const uploaded = results
-        .filter((result): result is PromiseFulfilledResult<NonNullable<Awaited<ReturnType<typeof tasks[number]>>>> => result.status === "fulfilled" && !!result.value)
-        .map((result) => result.value);
+      const uploaded = results.flatMap((result) => (
+        result.status === "fulfilled" && result.value ? [result.value] : []
+      ));
 
       if (uploaded.length > 0) {
         const { error: dbErr } = await supabase.from("media_assets").insert(uploaded);
