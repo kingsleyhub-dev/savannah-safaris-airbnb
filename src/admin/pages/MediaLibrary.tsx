@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { optimizeImage } from "@/lib/imageTransform";
 
 const photoCategories = ["Bedrooms", "Living Room", "Dining Area", "Kitchen", "Bathrooms", "Views", "Exterior"];
 
@@ -26,7 +27,10 @@ const MediaLibrary = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
-    const { data } = await supabase.from("media_assets").select("*").order("created_at", { ascending: false });
+    const { data } = await (supabase.from("media_assets") as any)
+      .select("*")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
     setAssets((data as Asset[]) ?? []);
     setLoading(false);
   };
@@ -60,7 +64,7 @@ const MediaLibrary = () => {
 
       const { error: upErr } = await supabase.storage
         .from("media")
-        .upload(path, file, { contentType: file.type, cacheControl: "3600" });
+        .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
       if (upErr) { toast.error(`${file.name}: ${upErr.message}`); return; }
 
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
@@ -94,11 +98,14 @@ const MediaLibrary = () => {
   };
 
   const remove = async (asset: Asset) => {
-    if (!confirm(`Delete ${asset.filename}? This cannot be undone.`)) return;
-    await supabase.storage.from("media").remove([asset.storage_path]);
-    await supabase.from("media_assets").delete().eq("id", asset.id);
-    await logAudit("delete_media", "media_asset", asset.id, { filename: asset.filename });
-    toast.success("Deleted");
+    if (!confirm(`Move ${asset.filename} to trash? You can restore it later from the database.`)) return;
+    // Soft delete: mark as deleted but keep the file. Public reads filter on deleted_at IS NULL.
+    const { error } = await (supabase.from("media_assets") as any)
+      .update({ deleted_at: new Date().toISOString(), is_published: false, show_in_gallery: false })
+      .eq("id", asset.id);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("soft_delete_media", "media_asset", asset.id, { filename: asset.filename });
+    toast.success("Moved to trash");
     load();
   };
 
@@ -153,7 +160,7 @@ const MediaLibrary = () => {
             <Card key={a.id} className="overflow-hidden group">
               <div className="aspect-square bg-muted relative">
                 {a.kind === "image" ? (
-                  <img src={a.public_url} alt={a.alt_text ?? a.filename} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={optimizeImage(a.public_url, { width: 320, height: 320, quality: 70 })} alt={a.alt_text ?? a.filename} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full grid place-items-center bg-foreground/5">
                     <Video className="size-10 text-muted-foreground" />

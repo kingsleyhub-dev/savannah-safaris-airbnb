@@ -55,6 +55,7 @@ export type Database = {
           check_out: string
           cleaning_cents: number
           created_at: string
+          deleted_at: string | null
           discount_cents: number
           discount_percent: number
           guest_country: string | null
@@ -78,6 +79,7 @@ export type Database = {
           check_out: string
           cleaning_cents?: number
           created_at?: string
+          deleted_at?: string | null
           discount_cents?: number
           discount_percent?: number
           guest_country?: string | null
@@ -101,6 +103,7 @@ export type Database = {
           check_out?: string
           cleaning_cents?: number
           created_at?: string
+          deleted_at?: string | null
           discount_cents?: number
           discount_percent?: number
           guest_country?: string | null
@@ -173,6 +176,7 @@ export type Database = {
         Row: {
           alt_text: string | null
           created_at: string
+          deleted_at: string | null
           filename: string
           gallery_category: string | null
           gallery_sort_order: number
@@ -192,6 +196,7 @@ export type Database = {
         Insert: {
           alt_text?: string | null
           created_at?: string
+          deleted_at?: string | null
           filename: string
           gallery_category?: string | null
           gallery_sort_order?: number
@@ -211,6 +216,7 @@ export type Database = {
         Update: {
           alt_text?: string | null
           created_at?: string
+          deleted_at?: string | null
           filename?: string
           gallery_category?: string | null
           gallery_sort_order?: number

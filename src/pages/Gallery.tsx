@@ -6,6 +6,7 @@ import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { optimizeImage } from "@/lib/imageTransform";
 
 type Item = { src: string; cat: string; alt: string };
 type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null; gallery_category: string | null; poster_url: string | null };
@@ -117,7 +118,7 @@ const Gallery = () => {
                     onClick={() => setOpenIndex(i)}
                     className="block w-full overflow-hidden rounded-2xl group break-inside-avoid"
                   >
-                    <img src={img.src} alt={img.alt} loading="lazy" className="w-full transition-elegant group-hover:scale-105" />
+                    <img src={optimizeImage(img.src, { width: 800, quality: 75 })} alt={img.alt} loading="lazy" className="w-full transition-elegant group-hover:scale-105" />
                   </button>
                 ))}
               </div>
@@ -162,7 +163,7 @@ const Gallery = () => {
               <CarouselContent>
                 {filtered.map((img, i) => (
                   <CarouselItem key={`${img.src}-modal-${i}`}>
-                    <img src={img.src} alt={img.alt} className="max-h-[85vh] w-full rounded-2xl object-contain" />
+                    <img src={optimizeImage(img.src, { width: 1600, quality: 82 })} alt={img.alt} className="max-h-[85vh] w-full rounded-2xl object-contain" />
                   </CarouselItem>
                 ))}
               </CarouselContent>
