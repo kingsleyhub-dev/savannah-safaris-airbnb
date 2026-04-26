@@ -411,3 +411,106 @@
   .hero-bird-wings,
   .hero-logo-ambient { animation: none !important; opacity: 0 !important; }
 }
+
+/* ============================================================
+   Hero orbit ring — slow elliptical halo around the logo
+   - Thin semi-transparent stroke with soft halo blur
+   - Slight elliptical tilt + slow drift (not a spinner)
+   - Traveling luminous highlight via conic-gradient mask
+   ============================================================ */
+@keyframes hero-ring-reveal {
+  from { opacity: 0; transform: translate(-50%, -50%) rotate(-8deg) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
+}
+@keyframes hero-ring-drift {
+  0%   { transform: translate(-50%, -50%) rotate(-8deg); }
+  50%  { transform: translate(-50%, -50%) rotate(-2deg); }
+  100% { transform: translate(-50%, -50%) rotate(-8deg); }
+}
+@keyframes hero-ring-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes hero-ring-shimmer {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+
+.hero-ring-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(560px, 92vw);
+  aspect-ratio: 16 / 11;          /* slight ellipse */
+  pointer-events: none;
+  z-index: 1;                     /* behind the logo image (logo has its own stacking) */
+  transform: translate(-50%, -50%) rotate(-8deg) scale(0.92);
+  opacity: 0;
+  animation:
+    hero-ring-reveal 1400ms cubic-bezier(0.22, 1, 0.36, 1) 800ms forwards,
+    hero-ring-drift 18s ease-in-out 2200ms infinite;
+  will-change: transform, opacity;
+}
+
+/* Base elliptical ring — thin stroke + soft halo */
+.hero-ring-base {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--lime) / 0.28);
+  box-shadow:
+    0 0 24px hsl(var(--olive) / 0.22) inset,
+    0 0 28px hsl(var(--lime) / 0.18),
+    0 0 60px hsl(var(--olive) / 0.18);
+  animation: hero-ring-shimmer 6s ease-in-out infinite;
+}
+
+/* Slightly inset secondary hairline for depth */
+.hero-ring-inner {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px solid hsl(0 0% 100% / 0.06);
+}
+
+/* Traveling luminous highlight — a rotating conic-gradient ring */
+.hero-ring-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1px;                   /* stroke thickness via mask trick */
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 280deg,
+    hsl(var(--lime) / 0.0) 290deg,
+    hsl(var(--lime) / 0.85) 330deg,
+    hsl(45 80% 75% / 0.9) 348deg,  /* soft warm gold */
+    hsl(0 0% 100% / 0.95) 356deg,
+    hsl(45 80% 75% / 0.9) 364deg,
+    hsl(var(--lime) / 0.85) 380deg,
+    hsl(var(--lime) / 0.0) 410deg,
+    transparent 420deg
+  );
+  -webkit-mask:
+    linear-gradient(#000, #000) content-box,
+    linear-gradient(#000, #000);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  filter: blur(0.4px) drop-shadow(0 0 8px hsl(var(--lime) / 0.55))
+                       drop-shadow(0 0 16px hsl(45 80% 70% / 0.35));
+  animation: hero-ring-sweep 9s linear 2400ms infinite;
+}
+
+@media (max-width: 640px) {
+  .hero-ring-stage { width: 86vw; }
+}
+@media (min-width: 1280px) {
+  .hero-ring-stage { width: 640px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ring-stage { animation: none !important; opacity: 0.6 !important; }
+  .hero-ring-base, .hero-ring-sweep { animation: none !important; }
+}
+
