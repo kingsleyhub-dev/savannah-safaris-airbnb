@@ -99,6 +99,17 @@ const GalleryManager = () => {
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
       const { data: { user } } = await userPromise;
 
+      // Auto-capture a poster frame for videos
+      let poster_url: string | null = null;
+      let poster_path: string | null = null;
+      if (isVideo) {
+        const blob = await captureVideoFrame(file, 1).catch(() => null);
+        if (blob) {
+          const uploaded = await uploadPoster(blob);
+          if (uploaded) { poster_url = uploaded.url; poster_path = uploaded.path; }
+        }
+      }
+
       return {
         storage_path: path,
         public_url: publicUrl,
@@ -110,6 +121,8 @@ const GalleryManager = () => {
         show_in_gallery: true,
         is_published: false,
         gallery_sort_order: baseSort + idx * 10,
+        poster_url,
+        poster_path,
       };
     });
 
