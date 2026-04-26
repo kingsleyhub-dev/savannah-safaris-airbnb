@@ -262,6 +262,8 @@ interface CardProps {
 
 const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
+  const [altText, setAltText] = useState(asset.alt_text ?? "");
+  useEffect(() => { setAltText(asset.alt_text ?? ""); }, [asset.alt_text]);
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -309,9 +311,9 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
         )}
 
         <Input
-          value={asset.alt_text ?? ""}
-          onChange={(e) => setLocalAlt(asset, e.target.value)}
-          onBlur={(e) => onUpdate(asset.id, { alt_text: e.target.value || null })}
+          value={altText}
+          onChange={(e) => setAltText(e.target.value)}
+          onBlur={() => { if ((altText || null) !== asset.alt_text) onUpdate(asset.id, { alt_text: altText || null }); }}
           placeholder="Alt text (accessibility)"
           className="h-8 text-xs"
         />
@@ -347,11 +349,6 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
       </div>
     </Card>
   );
-};
-
-// Local-only alt text edit (no re-render storm) — change is committed to DB on blur
-const setLocalAlt = (asset: Asset, value: string) => {
-  asset.alt_text = value;
 };
 
 export default GalleryManager;
