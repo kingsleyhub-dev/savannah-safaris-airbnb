@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { optimizeImage } from "@/lib/imageTransform";
 
 const photoCategories = ["Bedrooms", "Living Room", "Dining Area", "Kitchen", "Bathrooms", "Views", "Exterior"];
 
@@ -159,7 +160,7 @@ const MediaLibrary = () => {
             <Card key={a.id} className="overflow-hidden group">
               <div className="aspect-square bg-muted relative">
                 {a.kind === "image" ? (
-                  <img src={a.public_url} alt={a.alt_text ?? a.filename} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={optimizeImage(a.public_url, { width: 320, height: 320, quality: 70 })} alt={a.alt_text ?? a.filename} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full grid place-items-center bg-foreground/5">
                     <Video className="size-10 text-muted-foreground" />
