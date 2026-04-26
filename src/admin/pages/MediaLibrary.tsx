@@ -9,10 +9,12 @@ import { logAudit } from "../lib/audit";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
+const photoCategories = ["Bedrooms", "Living Room", "Dining Area", "Kitchen", "Bathrooms", "Views", "Exterior"];
+
 interface Asset {
   id: string; storage_path: string; public_url: string;
   kind: "image" | "video"; filename: string; size_bytes: number | null; alt_text: string | null;
-  created_at: string; show_in_gallery?: boolean; is_published?: boolean; published_at?: string | null;
+  created_at: string; show_in_gallery?: boolean; is_published?: boolean; published_at?: string | null; gallery_category?: string | null;
 }
 
 const MediaLibrary = () => {
@@ -91,7 +93,7 @@ const MediaLibrary = () => {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
-  const updateGalleryState = async (asset: Asset, changes: Partial<Pick<Asset, "show_in_gallery" | "is_published">>) => {
+  const updateGalleryState = async (asset: Asset, changes: Partial<Pick<Asset, "show_in_gallery" | "is_published" | "gallery_category">>) => {
     const nextPublished = changes.is_published ?? asset.is_published ?? false;
     const { error } = await (supabase.from("media_assets") as any).update({
       ...changes,
@@ -154,6 +156,17 @@ const MediaLibrary = () => {
                   </Button>
                 </div>
                 <div className="space-y-2 rounded-md bg-secondary/60 p-2">
+                  {a.kind === "image" && (
+                    <select
+                      value={a.gallery_category ?? ""}
+                      onChange={(event) => updateGalleryState(a, { gallery_category: event.target.value || null })}
+                      className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                      aria-label="Photo section"
+                    >
+                      <option value="">Photo section</option>
+                      {photoCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                    </select>
+                  )}
                   <div className="flex items-center justify-between gap-2">
                     <Label htmlFor={`gallery-${a.id}`} className="text-xs">Gallery</Label>
                     <Switch id={`gallery-${a.id}`} checked={!!a.show_in_gallery} onCheckedChange={(checked) => updateGalleryState(a, { show_in_gallery: checked, is_published: checked ? a.is_published : false })} />
