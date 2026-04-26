@@ -127,11 +127,21 @@ const Gallery = () => {
               {publishedVideos.length === 0 ? (
                 <p className="py-16 text-center text-muted-foreground">No published videos yet.</p>
               ) : (
-                <Carousel opts={{ align: "start" }} className="mx-auto max-w-5xl">
+                <Carousel opts={{ align: "start" }} className="mx-auto max-w-6xl">
                   <CarouselContent>
                   {publishedVideos.map((video) => (
-                    <CarouselItem key={video.id} className="sm:basis-1/2 lg:basis-1/3">
-                      <video src={video.public_url} controls preload="metadata" className="aspect-video w-full rounded-2xl bg-secondary object-cover" />
+                    <CarouselItem key={video.id} className="md:basis-1/2">
+                      <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-elegant">
+                        <video
+                          src={video.public_url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          controlsList="nodownload"
+                          className="h-full w-full object-contain"
+                          style={{ imageRendering: "auto" }}
+                        />
+                      </div>
                     </CarouselItem>
                   ))}
                   </CarouselContent>
