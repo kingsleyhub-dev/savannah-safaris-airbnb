@@ -287,7 +287,7 @@ const GalleryManager = () => {
           <SortableContext items={visible.map((a) => a.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {visible.map((a) => (
-                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} />
+                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} />
               ))}
             </div>
           </SortableContext>
@@ -305,11 +305,15 @@ interface CardProps {
   asset: Asset;
   onUpdate: (id: string, changes: Partial<Asset>) => void;
   onRemove: (asset: Asset) => void;
+  onReplace: (asset: Asset, file: File) => Promise<void>;
+  onAutoCaption: (asset: Asset) => Promise<string | null>;
 }
 
-const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
+const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption }: CardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
   const [altText, setAltText] = useState(asset.alt_text ?? "");
+  const [captioning, setCaptioning] = useState(false);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setAltText(asset.alt_text ?? ""); }, [asset.alt_text]);
   const style = {
     transform: CSS.Transform.toString(transform),
