@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw, Camera } from "lucide-react";
+import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw, Camera, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import { captureVideoFrame, uploadPoster } from "../lib/videoPoster";
@@ -242,6 +242,34 @@ const GalleryManager = () => {
     if (file.size > 10 * 1024 * 1024) { toast.error("Poster max 10MB"); return; }
     toast.info("Uploading poster…");
     await setPoster(asset, file);
+  };
+
+  const generatePoster = async (asset: Asset) => {
+    toast.info("Capturing reference frame…");
+    const frame = await captureVideoFrame(asset.public_url, 1).catch(() => null);
+    if (!frame) { toast.error("Could not read video frame"); return; }
+    const reference = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("Frame encoding failed"));
+      reader.readAsDataURL(frame);
+    }).catch(() => null);
+    if (!reference) { toast.error("Could not encode reference frame"); return; }
+
+    toast.info("Generating AI poster…");
+    const { data, error } = await supabase.functions.invoke("generate-poster", {
+      body: {
+        reference_image: reference,
+        category: asset.gallery_category,
+        caption: asset.alt_text,
+        filename: asset.filename,
+      },
+    });
+    if (error) { toast.error(error.message ?? "Generation failed"); return; }
+    const dataUrl = (data as { image?: string })?.image;
+    if (!dataUrl) { toast.error("No image returned"); return; }
+    const blob = await (await fetch(dataUrl)).blob();
+    await setPoster(asset, blob);
   };
 
   const autoCaption = async (asset: Asset): Promise<string | null> => {
