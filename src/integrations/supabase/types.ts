@@ -180,6 +180,8 @@ export type Database = {
           is_published: boolean
           kind: Database["public"]["Enums"]["media_kind"]
           mime_type: string | null
+          poster_path: string | null
+          poster_url: string | null
           public_url: string
           published_at: string | null
           show_in_gallery: boolean
@@ -197,6 +199,8 @@ export type Database = {
           is_published?: boolean
           kind: Database["public"]["Enums"]["media_kind"]
           mime_type?: string | null
+          poster_path?: string | null
+          poster_url?: string | null
           public_url: string
           published_at?: string | null
           show_in_gallery?: boolean
@@ -214,6 +218,8 @@ export type Database = {
           is_published?: boolean
           kind?: Database["public"]["Enums"]["media_kind"]
           mime_type?: string | null
+          poster_path?: string | null
+          poster_url?: string | null
           public_url?: string
           published_at?: string | null
           show_in_gallery?: boolean
