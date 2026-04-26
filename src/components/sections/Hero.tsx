@@ -3,12 +3,41 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 import { images } from "@/data/site";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
+import { useEffect, useRef } from "react";
 import homeHeroLogo from "@/assets/home-hero-logo-transparent.png";
 
 export const Hero = () => {
   const { get } = useSiteContent();
   const g = (k: string, fb: string) => get("home", "hero", k, fb);
   const heroImage = resolveImage(g("image", ""), images.hero);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Subtle parallax on mouse move — disabled for reduced-motion users.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mql.matches) return;
+
+    let raf = 0;
+    const onMove = (e: MouseEvent) => {
+      const { innerWidth: w, innerHeight: h } = window;
+      // Map cursor to a tiny offset (max ~6px) for an immersive but calm feel.
+      const x = ((e.clientX / w) - 0.5) * 12;
+      const y = ((e.clientY / h) - 0.5) * 8;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        stage.style.setProperty("--px", `${x.toFixed(2)}px`);
+        stage.style.setProperty("--py", `${y.toFixed(2)}px`);
+      });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
   <section className="relative flex min-h-screen items-center overflow-hidden">
     <div className="absolute inset-0">
@@ -19,14 +48,24 @@ export const Hero = () => {
     {/* Centered hero column */}
     <div className="relative container-luxe w-full pb-16 pt-24 text-primary-foreground sm:pb-20 sm:pt-32">
       <div className="mx-auto flex max-w-3xl flex-col items-center space-y-5 text-center sm:space-y-7">
-        {/* Animated logo centerpiece — fixed size, gentle ambient float (no zoom/scale) */}
-        <div className="hero-logo-wrap animate-hero-logo-in -mb-3 w-full flex justify-center">
-          <img
-            src={homeHeroLogo}
-            alt="Savannah Safaris"
-            className="hero-logo-float h-52 w-auto max-w-full object-contain select-none drop-shadow-[0_14px_36px_rgba(0,0,0,0.6)] sm:h-64 md:h-80 lg:h-[24rem]"
-            draggable={false}
-          />
+        {/* Premium animated logo: parallax → reveal → float, with glow + shimmer */}
+        <div ref={stageRef} className="hero-logo-stage -mb-3 w-full flex justify-center">
+          <div className="hero-logo-reveal relative">
+            <div className="hero-logo-float relative">
+              {/* Ambient olive/lime glow behind the mark */}
+              <div className="hero-logo-glow" aria-hidden="true" />
+              <img
+                src={homeHeroLogo}
+                alt="Savannah Safaris"
+                className="hero-logo-img relative h-52 w-auto max-w-full object-contain select-none drop-shadow-[0_14px_36px_rgba(0,0,0,0.6)] sm:h-64 md:h-80 lg:h-[24rem]"
+                draggable={false}
+              />
+              {/* One-time luxury shimmer sweep */}
+              <div className="hero-logo-shimmer-wrap" aria-hidden="true">
+                <div className="hero-logo-shimmer" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[10px] uppercase tracking-[0.18em] backdrop-blur-md animate-fade-up [animation-delay:200ms] opacity-0 [animation-fill-mode:forwards] sm:px-4 sm:text-xs sm:tracking-[0.25em]">
