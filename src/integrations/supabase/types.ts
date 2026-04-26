@@ -174,10 +174,14 @@ export type Database = {
           alt_text: string | null
           created_at: string
           filename: string
+          gallery_sort_order: number
           id: string
+          is_published: boolean
           kind: Database["public"]["Enums"]["media_kind"]
           mime_type: string | null
           public_url: string
+          published_at: string | null
+          show_in_gallery: boolean
           size_bytes: number | null
           storage_path: string
           uploaded_by: string | null
@@ -186,10 +190,14 @@ export type Database = {
           alt_text?: string | null
           created_at?: string
           filename: string
+          gallery_sort_order?: number
           id?: string
+          is_published?: boolean
           kind: Database["public"]["Enums"]["media_kind"]
           mime_type?: string | null
           public_url: string
+          published_at?: string | null
+          show_in_gallery?: boolean
           size_bytes?: number | null
           storage_path: string
           uploaded_by?: string | null
@@ -198,10 +206,14 @@ export type Database = {
           alt_text?: string | null
           created_at?: string
           filename?: string
+          gallery_sort_order?: number
           id?: string
+          is_published?: boolean
           kind?: Database["public"]["Enums"]["media_kind"]
           mime_type?: string | null
           public_url?: string
+          published_at?: string | null
+          show_in_gallery?: boolean
           size_bytes?: number | null
           storage_path?: string
           uploaded_by?: string | null
