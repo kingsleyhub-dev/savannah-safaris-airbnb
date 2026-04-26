@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw, Camera } from "lucide-react";
+import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw, Camera, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import { captureVideoFrame, uploadPoster } from "../lib/videoPoster";
@@ -244,6 +244,34 @@ const GalleryManager = () => {
     await setPoster(asset, file);
   };
 
+  const generatePoster = async (asset: Asset) => {
+    toast.info("Capturing reference frame…");
+    const frame = await captureVideoFrame(asset.public_url, 1).catch(() => null);
+    if (!frame) { toast.error("Could not read video frame"); return; }
+    const reference = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("Frame encoding failed"));
+      reader.readAsDataURL(frame);
+    }).catch(() => null);
+    if (!reference) { toast.error("Could not encode reference frame"); return; }
+
+    toast.info("Generating AI poster…");
+    const { data, error } = await supabase.functions.invoke("generate-poster", {
+      body: {
+        reference_image: reference,
+        category: asset.gallery_category,
+        caption: asset.alt_text,
+        filename: asset.filename,
+      },
+    });
+    if (error) { toast.error(error.message ?? "Generation failed"); return; }
+    const dataUrl = (data as { image?: string })?.image;
+    if (!dataUrl) { toast.error("No image returned"); return; }
+    const blob = await (await fetch(dataUrl)).blob();
+    await setPoster(asset, blob);
+  };
+
   const autoCaption = async (asset: Asset): Promise<string | null> => {
     const { data, error } = await supabase.functions.invoke("auto-caption", {
       body: { image_url: asset.public_url, category: asset.gallery_category },
@@ -355,7 +383,7 @@ const GalleryManager = () => {
           <SortableContext items={visible.map((a) => a.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {visible.map((a) => (
-                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} onRecapturePoster={recapturePoster} onUploadPoster={uploadPosterFile} />
+                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} onRecapturePoster={recapturePoster} onUploadPoster={uploadPosterFile} onGeneratePoster={generatePoster} />
               ))}
             </div>
           </SortableContext>
@@ -377,9 +405,10 @@ interface CardProps {
   onAutoCaption: (asset: Asset) => Promise<string | null>;
   onRecapturePoster: (asset: Asset) => Promise<void>;
   onUploadPoster: (asset: Asset, file: File) => Promise<void>;
+  onGeneratePoster: (asset: Asset) => Promise<void>;
 }
 
-const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption, onRecapturePoster, onUploadPoster }: CardProps) => {
+const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption, onRecapturePoster, onUploadPoster, onGeneratePoster }: CardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
   const [altText, setAltText] = useState(asset.alt_text ?? "");
   const [captioning, setCaptioning] = useState(false);
@@ -521,6 +550,20 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
                 <Upload className="size-3" /> Upload poster
               </Button>
             </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 w-full text-xs gap-1"
+              disabled={posterBusy}
+              title="Create an AI-styled poster using your brand palette"
+              onClick={async () => {
+                setPosterBusy(true);
+                await onGeneratePoster(asset);
+                setPosterBusy(false);
+              }}
+            >
+              {posterBusy ? <Loader2 className="size-3 animate-spin" /> : <Wand2 className="size-3" />} Generate poster (AI)
+            </Button>
           </div>
         )}
 
