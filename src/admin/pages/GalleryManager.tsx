@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import {
@@ -139,6 +139,53 @@ const GalleryManager = () => {
     await logAudit("delete_gallery_media", "media_asset", asset.id, { filename: asset.filename });
     toast.success("Deleted");
     setAssets((curr) => curr.filter((a) => a.id !== asset.id));
+  };
+
+  const replace = async (asset: Asset, file: File) => {
+    if (file.size > 50 * 1024 * 1024) { toast.error("Max 50MB"); return; }
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) { toast.error("Unsupported file type"); return; }
+    if ((isVideo ? "video" : "image") !== asset.kind) {
+      toast.error(`Replacement must be the same type (${asset.kind})`);
+      return;
+    }
+    toast.info("Replacing…");
+    const folder = isVideo ? "videos" : "images";
+    const ext = file.name.split(".").pop();
+    const newPath = `${folder}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("media").upload(newPath, file, { contentType: file.type, cacheControl: "3600" });
+    if (upErr) { toast.error(upErr.message); return; }
+    const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(newPath);
+    const { error: dbErr } = await (supabase.from("media_assets") as any).update({
+      storage_path: newPath,
+      public_url: publicUrl,
+      filename: file.name,
+      mime_type: file.type,
+      size_bytes: file.size,
+    }).eq("id", asset.id);
+    if (dbErr) {
+      await supabase.storage.from("media").remove([newPath]);
+      toast.error(dbErr.message);
+      return;
+    }
+    // Best-effort cleanup of the previous file
+    await supabase.storage.from("media").remove([asset.storage_path]);
+    await logAudit("replace_gallery_media", "media_asset", asset.id, { old: asset.filename, new: file.name });
+    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, storage_path: newPath, public_url: publicUrl, filename: file.name } : a));
+    toast.success("Replaced");
+  };
+
+  const autoCaption = async (asset: Asset): Promise<string | null> => {
+    const { data, error } = await supabase.functions.invoke("auto-caption", {
+      body: { image_url: asset.public_url, category: asset.gallery_category },
+    });
+    if (error) { toast.error(error.message ?? "Caption failed"); return null; }
+    const caption = (data as { caption?: string })?.caption?.trim();
+    if (!caption) { toast.error("No caption returned"); return null; }
+    await updateAsset(asset.id, { alt_text: caption });
+    toast.success("Caption generated");
+    return caption;
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
