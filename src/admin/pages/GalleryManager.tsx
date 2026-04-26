@@ -468,6 +468,62 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
           )}
         </div>
 
+        {asset.kind === "video" && (
+          <div className="rounded-md border border-dashed border-input p-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="size-12 shrink-0 rounded bg-black overflow-hidden grid place-items-center">
+                {asset.poster_url ? (
+                  <img src={asset.poster_url} alt="Poster" className="size-full object-cover" />
+                ) : (
+                  <ImageIcon className="size-4 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium">Poster thumbnail</p>
+                <p className="text-[10px] text-muted-foreground">Cover frame shown before playback.</p>
+              </div>
+            </div>
+            <input
+              ref={posterInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (posterInputRef.current) posterInputRef.current.value = "";
+                if (!f) return;
+                setPosterBusy(true);
+                await onUploadPoster(asset, f);
+                setPosterBusy(false);
+              }}
+            />
+            <div className="grid grid-cols-2 gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={posterBusy}
+                onClick={async () => {
+                  setPosterBusy(true);
+                  await onRecapturePoster(asset);
+                  setPosterBusy(false);
+                }}
+              >
+                {posterBusy ? <Loader2 className="size-3 animate-spin" /> : <Camera className="size-3" />} Capture frame
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={posterBusy}
+                onClick={() => posterInputRef.current?.click()}
+              >
+                <Upload className="size-3" /> Upload poster
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-md bg-secondary/60 p-2 space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor={`gal-${asset.id}`} className="text-xs">In gallery</Label>
