@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Upload, Trash2, Loader2, Image as ImageIcon, Video, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Asset {
   id: string; storage_path: string; public_url: string;
   kind: "image" | "video"; filename: string; size_bytes: number | null; alt_text: string | null;
-  created_at: string;
+  created_at: string; show_in_gallery?: boolean; is_published?: boolean; published_at?: string | null;
 }
 
 const MediaLibrary = () => {
@@ -89,6 +91,17 @@ const MediaLibrary = () => {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
+  const updateGalleryState = async (asset: Asset, changes: Partial<Pick<Asset, "show_in_gallery" | "is_published">>) => {
+    const nextPublished = changes.is_published ?? asset.is_published ?? false;
+    const { error } = await (supabase.from("media_assets") as any).update({
+      ...changes,
+      published_at: changes.is_published ? new Date().toISOString() : nextPublished ? asset.published_at : null,
+    }).eq("id", asset.id);
+    if (error) { toast.error(error.message); return; }
+    await logAudit("update_media_publish_state", "media_asset", asset.id, { filename: asset.filename, ...changes });
+    setAssets((current) => current.map((item) => item.id === asset.id ? { ...item, ...changes, published_at: changes.is_published ? new Date().toISOString() : item.published_at } : item));
+  };
+
   const filtered = assets.filter((a) => a.filename.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -139,6 +152,16 @@ const MediaLibrary = () => {
                   <Button variant="outline" size="sm" className="h-7 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={() => remove(a)}>
                     <Trash2 className="size-3" />
                   </Button>
+                </div>
+                <div className="space-y-2 rounded-md bg-secondary/60 p-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor={`gallery-${a.id}`} className="text-xs">Gallery</Label>
+                    <Switch id={`gallery-${a.id}`} checked={!!a.show_in_gallery} onCheckedChange={(checked) => updateGalleryState(a, { show_in_gallery: checked, is_published: checked ? a.is_published : false })} />
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor={`publish-${a.id}`} className="text-xs">Published</Label>
+                    <Switch id={`publish-${a.id}`} checked={!!a.is_published} disabled={!a.show_in_gallery} onCheckedChange={(checked) => updateGalleryState(a, { is_published: checked })} />
+                  </div>
                 </div>
               </div>
             </Card>

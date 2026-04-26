@@ -1,11 +1,13 @@
 import { PageHero } from "@/components/sections/PageHero";
 import { images } from "@/data/site";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X } from "lucide-react";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 
 type Item = { src: string; cat: string; alt: string };
+type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null };
 const allDefaults: Item[] = [
   { src: images.bedroom, cat: "Bedrooms", alt: "Master bedroom" },
   { src: images.bedroom2, cat: "Bedrooms", alt: "Second bedroom" },
@@ -38,7 +40,16 @@ const Gallery = () => {
   }));
   const [active, setActive] = useState("All");
   const [open, setOpen] = useState<string | null>(null);
+  const [publishedMedia, setPublishedMedia] = useState<MediaAsset[]>([]);
   const filtered = active === "All" ? all : all.filter((i) => i.cat === active);
+  const publishedPhotos = publishedMedia.filter((item) => item.kind === "image");
+  const publishedVideos = publishedMedia.filter((item) => item.kind === "video");
+
+  useEffect(() => {
+    (supabase.from("media_assets") as any).select("id, public_url, kind, filename, alt_text").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }: { data: MediaAsset[] | null }) => {
+      setPublishedMedia((data as MediaAsset[]) ?? []);
+    });
+  }, []);
 
   return (
     <>
@@ -51,31 +62,52 @@ const Gallery = () => {
 
       <section className="section-padding">
         <div className="container-luxe">
-          <div className="flex flex-wrap gap-2 justify-center mb-10">
-            {cats.map((c) => (
-              <button
-                key={c}
-                onClick={() => setActive(c)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-smooth ${
-                  active === c ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground/80 hover:bg-secondary/70"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+          <Tabs defaultValue="photos" className="space-y-10">
+            <TabsList className="mx-auto flex w-fit">
+              <TabsTrigger value="photos">Photos</TabsTrigger>
+              <TabsTrigger value="videos">Videos</TabsTrigger>
+            </TabsList>
 
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {filtered.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => setOpen(img.src)}
-                className="block w-full overflow-hidden rounded-2xl group break-inside-avoid"
-              >
-                <img src={img.src} alt={img.alt} loading="lazy" className="w-full transition-elegant group-hover:scale-105" />
-              </button>
-            ))}
-          </div>
+            <TabsContent value="photos" className="space-y-10">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {cats.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setActive(c)}
+                    className={`px-5 py-2 rounded-full text-sm font-medium transition-smooth ${
+                      active === c ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground/80 hover:bg-secondary/70"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+                {[...filtered, ...publishedPhotos.map((item) => ({ src: item.public_url, cat: "Uploaded", alt: item.alt_text ?? item.filename }))].map((img, i) => (
+                  <button
+                    key={`${img.src}-${i}`}
+                    onClick={() => setOpen(img.src)}
+                    className="block w-full overflow-hidden rounded-2xl group break-inside-avoid"
+                  >
+                    <img src={img.src} alt={img.alt} loading="lazy" className="w-full transition-elegant group-hover:scale-105" />
+                  </button>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="videos">
+              {publishedVideos.length === 0 ? (
+                <p className="py-16 text-center text-muted-foreground">No published videos yet.</p>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {publishedVideos.map((video) => (
+                    <video key={video.id} src={video.public_url} controls preload="metadata" className="aspect-video w-full rounded-2xl bg-secondary object-cover" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 
