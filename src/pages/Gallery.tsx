@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 
 type Item = { src: string; cat: string; alt: string };
-type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null };
+type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null; gallery_category: string | null };
 const allDefaults: Item[] = [
   { src: images.bedroom, cat: "Bedrooms", alt: "Master bedroom" },
   { src: images.bedroom2, cat: "Bedrooms", alt: "Second bedroom" },
@@ -29,7 +29,7 @@ const allDefaults: Item[] = [
   { src: images.bedroomAlt1, cat: "Bedrooms", alt: "Bedroom — wider view" },
   { src: images.bedroomAlt2, cat: "Bedrooms", alt: "Bedroom — detail" },
 ];
-const cats = ["All", ...Array.from(new Set(allDefaults.map((i) => i.cat)))];
+const baseCats = ["All", ...Array.from(new Set(allDefaults.map((i) => i.cat)))];
 
 const Gallery = () => {
   const { get } = useSiteContent();
@@ -41,12 +41,17 @@ const Gallery = () => {
   const [active, setActive] = useState("All");
   const [open, setOpen] = useState<string | null>(null);
   const [publishedMedia, setPublishedMedia] = useState<MediaAsset[]>([]);
-  const filtered = active === "All" ? all : all.filter((i) => i.cat === active);
   const publishedPhotos = publishedMedia.filter((item) => item.kind === "image");
   const publishedVideos = publishedMedia.filter((item) => item.kind === "video");
+  const cats = ["All", ...Array.from(new Set([...baseCats.slice(1), ...publishedPhotos.map((item) => item.gallery_category).filter(Boolean) as string[]]))];
+  const photoItems = [
+    ...all,
+    ...publishedPhotos.map((item) => ({ src: item.public_url, cat: item.gallery_category ?? "Uploaded", alt: item.alt_text ?? item.filename })),
+  ];
+  const filtered = active === "All" ? photoItems : photoItems.filter((i) => i.cat === active);
 
   useEffect(() => {
-    (supabase.from("media_assets") as any).select("id, public_url, kind, filename, alt_text").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }: { data: MediaAsset[] | null }) => {
+    (supabase.from("media_assets") as any).select("id, public_url, kind, filename, alt_text, gallery_category").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }: { data: MediaAsset[] | null }) => {
       setPublishedMedia((data as MediaAsset[]) ?? []);
     });
   }, []);
@@ -84,7 +89,7 @@ const Gallery = () => {
               </div>
 
               <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-                {[...filtered, ...publishedPhotos.map((item) => ({ src: item.public_url, cat: "Uploaded", alt: item.alt_text ?? item.filename }))].map((img, i) => (
+                {filtered.map((img, i) => (
                   <button
                     key={`${img.src}-${i}`}
                     onClick={() => setOpen(img.src)}
