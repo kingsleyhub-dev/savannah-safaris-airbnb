@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 const tiles = [
-  { src: images.bedroom, label: "Bedroom Suite", className: "col-span-2 row-span-2 lg:col-span-2 lg:row-span-2" },
+  { src: images.bedroom, label: "Bedroom Suite", className: "sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2" },
   { src: images.kitchen, label: "Kitchen" },
   { src: images.dining, label: "Dining" },
   { src: images.view, label: "City View" },
@@ -27,7 +27,7 @@ export const GalleryPreview = () => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 auto-rows-[220px] min-[420px]:grid-cols-2 min-[420px]:auto-rows-[140px] sm:gap-4 sm:auto-rows-[180px] lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-fr lg:min-h-[36rem]">
+      <div className="grid grid-cols-1 gap-3 auto-rows-[220px] sm:grid-cols-2 sm:gap-4 sm:auto-rows-[180px] lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-fr lg:min-h-[36rem]">
         {tiles.map((t, i) => (
           <div
             key={i}
