@@ -65,8 +65,9 @@ const MediaLibrary = () => {
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
       const { data: { user } } = await userPromise;
 
+      const kind: Asset["kind"] = isVideo ? "video" : "image";
       return {
-        storage_path: path, public_url: publicUrl, kind: isVideo ? "video" : "image",
+        storage_path: path, public_url: publicUrl, kind,
         filename: file.name, mime_type: file.type, size_bytes: file.size, uploaded_by: user?.id,
       };
     });
