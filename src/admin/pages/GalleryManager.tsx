@@ -329,7 +329,7 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
         {asset.kind === "image" ? (
           <img src={asset.public_url} alt={asset.alt_text ?? asset.filename} loading="lazy" className="w-full h-full object-cover" />
         ) : (
-          <video src={asset.public_url} className="w-full h-full object-cover" preload="metadata" />
+          <video src={asset.public_url} className="w-full h-full bg-black object-contain" preload="metadata" playsInline muted />
         )}
         <button
           {...attributes}
