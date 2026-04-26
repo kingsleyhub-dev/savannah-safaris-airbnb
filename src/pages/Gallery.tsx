@@ -1,11 +1,10 @@
 import { PageHero } from "@/components/sections/PageHero";
 import { images } from "@/data/site";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 type Item = { src: string; cat: string; alt: string };
 type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null };
@@ -47,7 +46,7 @@ const Gallery = () => {
   const publishedVideos = publishedMedia.filter((item) => item.kind === "video");
 
   useEffect(() => {
-    supabase.from("media_assets").select("id, public_url, kind, filename, alt_text").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }) => {
+    (supabase.from("media_assets") as any).select("id, public_url, kind, filename, alt_text").eq("show_in_gallery", true).eq("is_published", true).order("gallery_sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }: { data: MediaAsset[] | null }) => {
       setPublishedMedia((data as MediaAsset[]) ?? []);
     });
   }, []);

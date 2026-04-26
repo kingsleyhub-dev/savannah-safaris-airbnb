@@ -93,7 +93,7 @@ const MediaLibrary = () => {
 
   const updateGalleryState = async (asset: Asset, changes: Partial<Pick<Asset, "show_in_gallery" | "is_published">>) => {
     const nextPublished = changes.is_published ?? asset.is_published ?? false;
-    const { error } = await supabase.from("media_assets").update({
+    const { error } = await (supabase.from("media_assets") as any).update({
       ...changes,
       published_at: changes.is_published ? new Date().toISOString() : nextPublished ? asset.published_at : null,
     }).eq("id", asset.id);
