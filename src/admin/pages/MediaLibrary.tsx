@@ -45,6 +45,8 @@ const MediaLibrary = () => {
     setUploading(true);
     toast.info(`Uploading ${list.length} file${list.length === 1 ? "" : "s"}…`);
 
+    const userPromise = supabase.auth.getUser();
+
     const tasks = list.map(async (file) => {
       if (file.size > 50 * 1024 * 1024) { toast.error(`${file.name}: max 50MB`); return; }
       const isVideo = file.type.startsWith("video/");
@@ -61,19 +63,30 @@ const MediaLibrary = () => {
       if (upErr) { toast.error(`${file.name}: ${upErr.message}`); return; }
 
       const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await userPromise;
 
-      const { error: dbErr } = await supabase.from("media_assets").insert({
+      return {
         storage_path: path, public_url: publicUrl, kind: isVideo ? "video" : "image",
         filename: file.name, mime_type: file.type, size_bytes: file.size, uploaded_by: user?.id,
-      });
-      if (dbErr) { toast.error(`${file.name}: ${dbErr.message}`); return; }
-      logAudit("upload_media", "media_asset", path, { filename: file.name });
+      };
     });
 
-    Promise.allSettled(tasks).then(() => {
+    Promise.allSettled(tasks).then(async (results) => {
+      const uploaded = results
+        .filter((result): result is PromiseFulfilledResult<NonNullable<Awaited<ReturnType<typeof tasks[number]>>>> => result.status === "fulfilled" && !!result.value)
+        .map((result) => result.value);
+
+      if (uploaded.length > 0) {
+        const { error: dbErr } = await supabase.from("media_assets").insert(uploaded);
+        if (dbErr) {
+          toast.error(dbErr.message);
+        } else {
+          uploaded.forEach((item) => void logAudit("upload_media", "media_asset", item.storage_path, { filename: item.filename }));
+        }
+      }
+
       setUploading(false);
-      toast.success("Upload complete");
+      toast.success(uploaded.length > 0 ? "Upload complete" : "No files uploaded");
       load();
     });
   };
