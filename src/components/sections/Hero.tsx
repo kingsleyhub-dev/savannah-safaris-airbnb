@@ -54,6 +54,8 @@ export const Hero = () => {
             <div className="hero-logo-float relative">
               {/* Ambient olive/lime glow behind the mark */}
               <div className="hero-logo-glow" aria-hidden="true" />
+              {/* Bird-pass ambient highlight (pulses when bird nears the logo) */}
+              <div className="hero-logo-ambient" aria-hidden="true" />
               <img
                 src={homeHeroLogo}
                 alt="Savannah Safaris"
@@ -63,6 +65,31 @@ export const Hero = () => {
               {/* One-time luxury shimmer sweep */}
               <div className="hero-logo-shimmer-wrap" aria-hidden="true">
                 <div className="hero-logo-shimmer" />
+              </div>
+              {/* Elegant orbiting bird silhouette */}
+              <div className="hero-bird-orbit" aria-hidden="true">
+                <div className="hero-bird">
+                  <div className="hero-bird-tilt">
+                    <svg className="hero-bird-svg" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="heroBirdGrad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stopColor="hsl(var(--lime))" />
+                          <stop offset="55%" stopColor="hsl(var(--olive))" />
+                          <stop offset="100%" stopColor="hsl(var(--accent))" />
+                        </linearGradient>
+                      </defs>
+                      {/* Body */}
+                      <ellipse cx="14" cy="14" rx="2.2" ry="1.4" fill="url(#heroBirdGrad)" />
+                      {/* Wings — gentle flap */}
+                      <g className="hero-bird-wings">
+                        <path
+                          d="M2 14 Q 8 6 14 13 Q 20 6 26 14 Q 20 11 14 14 Q 8 11 2 14 Z"
+                          fill="url(#heroBirdGrad)"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
