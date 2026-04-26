@@ -165,28 +165,128 @@
 }
 
 /* ---------------------------------------------------------------
-   Hero logo — gentle ambient animation.
-   Rules:
-   • The wrapper handles the initial fade-in (opacity + translate only).
-   • The image itself uses an infinite "float" (translateY only).
-   • NEVER use scale/zoom on the logo so it stays a fixed size.
+   Hero logo — premium cinematic animation system.
+   Layers (composited, GPU-friendly: opacity + transform + filter only):
+   1) .hero-logo-stage      → parallax translate driven by --px / --py
+   2) .hero-logo-reveal     → one-time fade + lift + scale-in (1.2s ease-out)
+   3) .hero-logo-float      → infinite gentle vertical float after reveal
+   4) .hero-logo-img        → hover lift + brightness, holds the logo image
+   5) .hero-logo-glow       → soft ambient olive/lime glow behind the mark
+   6) .hero-logo-shimmer    → one-time light sweep across the logo
+   No rotation. No bounce. No scale loop. Reduced-motion fully respected.
    --------------------------------------------------------------- */
-@keyframes hero-logo-in {
-  0%   { opacity: 0; transform: translateY(-12px); }
-  100% { opacity: 1; transform: translateY(0); }
+
+/* 1) Cinematic reveal: fade 0→1, lift 24px→0, scale 0.94→1, 1.2s ease-out */
+@keyframes hero-logo-reveal {
+  0%   { opacity: 0; transform: translateY(24px) scale(0.94); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
 }
+
+/* 2) Gentle ambient float — translateY only, max 4px, slow + alternating */
 @keyframes hero-logo-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
 }
-.animate-hero-logo-in {
-  animation: hero-logo-in 900ms ease-out both;
+
+/* 3) Subtle ambient glow pulse on the green emblem */
+@keyframes hero-logo-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.8;  transform: scale(1.04); }
 }
-.hero-logo-float {
-  animation: hero-logo-float 5s ease-in-out infinite;
+
+/* 4) One-time luxury shimmer sweep, runs once shortly after reveal */
+@keyframes hero-logo-shimmer {
+  0%   { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+  20%  { opacity: 0.55; }
+  100% { transform: translateX(220%)  skewX(-12deg); opacity: 0; }
+}
+
+/* Stage handles parallax translation driven by JS (CSS vars) */
+.hero-logo-stage {
+  --px: 0px;
+  --py: 0px;
+  transform: translate3d(var(--px), var(--py), 0);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
+
+/* Reveal wrapper — runs once on mount */
+.hero-logo-reveal {
+  animation: hero-logo-reveal 1200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Float wrapper — kicks in after reveal completes, infinite + alternate */
+.hero-logo-float {
+  animation: hero-logo-float 5.5s ease-in-out 1300ms infinite alternate;
+  will-change: transform;
+}
+
+/* The image itself — hover-only refinement, no idle motion here */
+.hero-logo-img {
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, filter;
+}
+.hero-logo-img:hover {
+  transform: scale(1.03);
+  filter: brightness(1.06) drop-shadow(0 18px 40px rgba(0,0,0,0.55));
+}
+
+/* Soft ambient glow — olive/lime, behind the mark only, never neon */
+.hero-logo-glow {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 62%;
+  aspect-ratio: 1 / 1;
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    hsl(var(--lime) / 0.32) 0%,
+    hsl(var(--olive) / 0.18) 38%,
+    transparent 72%
+  );
+  filter: blur(28px);
+  opacity: 0.65;
+  pointer-events: none;
+  animation: hero-logo-glow-pulse 6s ease-in-out infinite;
+}
+
+/* Shimmer sweep overlay — clipped to the logo bounds via the wrapper */
+.hero-logo-shimmer-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 70%, transparent 100%);
+          mask-image: radial-gradient(closest-side, #000 70%, transparent 100%);
+}
+.hero-logo-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    hsl(var(--cream) / 0.0) 30%,
+    hsl(var(--cream) / 0.55) 50%,
+    hsl(var(--cream) / 0.0) 70%,
+    transparent 100%
+  );
+  filter: blur(2px);
+  opacity: 0;
+  animation: hero-logo-shimmer 1800ms cubic-bezier(0.22, 1, 0.36, 1) 1400ms 1 both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-hero-logo-in,
-  .hero-logo-float { animation: none !important; }
+  .hero-logo-stage { transform: none !important; transition: none !important; }
+  .hero-logo-reveal,
+  .hero-logo-float,
+  .hero-logo-glow,
+  .hero-logo-shimmer { animation: none !important; }
+  .hero-logo-img { transition: none !important; }
+  .hero-logo-img:hover { transform: none; filter: none; }
 }
