@@ -298,18 +298,17 @@
    - Subtle wing flap
    - Ambient logo shimmer pulse synced with bird's closest pass
    ============================================================ */
-@keyframes hero-bird-orbit {
-  0%   { offset-distance: 0%;   opacity: 0; }
-  6%   { opacity: 0.95; }
-  50%  { opacity: 0.95; }
-  94%  { opacity: 0.95; }
-  100% { offset-distance: 100%; opacity: 0.95; }
+@keyframes hero-bird-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
-@keyframes hero-bird-tilt {
-  0%, 100% { transform: rotate(-6deg) scale(1); }
-  25%      { transform: rotate(4deg)  scale(1.02); }
-  50%      { transform: rotate(-3deg) scale(1); }
-  75%      { transform: rotate(5deg)  scale(1.02); }
+@keyframes hero-bird-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes hero-bird-bob {
+  0%, 100% { transform: translate(var(--bird-radius-x, 240px), 0) rotate(0deg); }
+  50%      { transform: translate(var(--bird-radius-x, 240px), -8px) rotate(0deg); }
 }
 @keyframes hero-bird-flap {
   0%, 100% { transform: scaleY(1); }
@@ -318,13 +317,13 @@
 @keyframes hero-bird-trail {
   0%, 100% {
     filter:
-      drop-shadow(0 0 6px hsl(var(--lime) / 0.45))
-      drop-shadow(0 0 14px hsl(var(--olive) / 0.35));
+      drop-shadow(0 0 6px hsl(var(--lime) / 0.55))
+      drop-shadow(0 0 14px hsl(var(--olive) / 0.4));
   }
   50% {
     filter:
-      drop-shadow(0 0 10px hsl(var(--lime) / 0.65))
-      drop-shadow(0 0 22px hsl(var(--olive) / 0.45));
+      drop-shadow(0 0 12px hsl(var(--lime) / 0.8))
+      drop-shadow(0 0 24px hsl(var(--olive) / 0.5));
   }
 }
 @keyframes hero-logo-ambient-pulse {
@@ -333,32 +332,41 @@
   75%           { opacity: 0; }
 }
 
+/* Orbit container: centered on the logo, rotates slowly */
 .hero-bird-orbit {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-.hero-bird {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 28px;
-  height: 28px;
-  margin: -14px 0 0 -14px;
-  /* Elliptical orbit around logo center; tuned to clear the wordmark */
-  offset-path: path("M 0 0 m -260 0 a 260 150 0 1 1 520 0 a 260 150 0 1 1 -520 0");
-  offset-rotate: auto;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 5;
+  transform-origin: 0 0;
   animation:
-    hero-bird-orbit 22s cubic-bezier(0.45, 0, 0.55, 1) 1600ms infinite,
-    hero-bird-trail 4s ease-in-out 1600ms infinite;
-  opacity: 0;
-  will-change: offset-distance, filter, opacity;
+    hero-bird-spin 22s linear infinite,
+    hero-bird-fadein 1200ms ease-out 1400ms both;
+  --bird-radius-x: 240px;
+}
+/* The bird sits on the orbit ring */
+.hero-bird {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  /* Pushed out along X by orbit radius; rotation comes from parent */
+  animation:
+    hero-bird-bob 3.4s ease-in-out infinite,
+    hero-bird-trail 4s ease-in-out infinite;
+  will-change: transform, filter;
 }
 .hero-bird-tilt {
   width: 100%;
   height: 100%;
-  animation: hero-bird-tilt 8s ease-in-out infinite;
+  /* Counter-rotate so the bird stays roughly horizontal as orbit spins.
+     22s parent / -360deg = matches orbit. */
+  animation: hero-bird-spin 22s linear infinite reverse;
   transform-origin: 50% 50%;
 }
 .hero-bird-svg {
@@ -367,19 +375,17 @@
   display: block;
 }
 .hero-bird-wings {
-  transform-origin: 14px 14px;
+  transform-origin: 18px 18px;
   animation: hero-bird-flap 520ms ease-in-out infinite;
 }
 
 @media (max-width: 640px) {
-  .hero-bird { width: 22px; height: 22px; margin: -11px 0 0 -11px;
-    offset-path: path("M 0 0 m -180 0 a 180 110 0 1 1 360 0 a 180 110 0 1 1 -360 0");
-  }
+  .hero-bird-orbit { --bird-radius-x: 160px; }
+  .hero-bird { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+  .hero-bird-wings { transform-origin: 14px 14px; }
 }
 @media (min-width: 1024px) {
-  .hero-bird {
-    offset-path: path("M 0 0 m -320 0 a 320 180 0 1 1 640 0 a 320 180 0 1 1 -640 0");
-  }
+  .hero-bird-orbit { --bird-radius-x: 300px; }
 }
 
 /* Ambient highlight on logo, pulsed once per bird pass */
