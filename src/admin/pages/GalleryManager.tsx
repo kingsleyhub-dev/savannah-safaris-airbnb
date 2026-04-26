@@ -143,10 +143,11 @@ const GalleryManager = () => {
   };
 
   const replace = async (asset: Asset, file: File) => {
-    if (file.size > 50 * 1024 * 1024) { toast.error("Max 50MB"); return; }
     const isVideo = file.type.startsWith("video/");
     const isImage = file.type.startsWith("image/");
     if (!isVideo && !isImage) { toast.error("Unsupported file type"); return; }
+    const maxBytes = isVideo ? 100 * 1024 * 1024 : 50 * 1024 * 1024;
+    if (file.size > maxBytes) { toast.error(`Max ${isVideo ? "100MB" : "50MB"}`); return; }
     if ((isVideo ? "video" : "image") !== asset.kind) {
       toast.error(`Replacement must be the same type (${asset.kind})`);
       return;
