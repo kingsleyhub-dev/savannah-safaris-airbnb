@@ -355,7 +355,7 @@ const GalleryManager = () => {
           <SortableContext items={visible.map((a) => a.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {visible.map((a) => (
-                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} />
+                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} onRecapturePoster={recapturePoster} onUploadPoster={uploadPosterFile} />
               ))}
             </div>
           </SortableContext>
@@ -375,9 +375,11 @@ interface CardProps {
   onRemove: (asset: Asset) => void;
   onReplace: (asset: Asset, file: File) => Promise<void>;
   onAutoCaption: (asset: Asset) => Promise<string | null>;
+  onRecapturePoster: (asset: Asset) => Promise<void>;
+  onUploadPoster: (asset: Asset, file: File) => Promise<void>;
 }
 
-const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption }: CardProps) => {
+const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption, onRecapturePoster, onUploadPoster }: CardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
   const [altText, setAltText] = useState(asset.alt_text ?? "");
   const [captioning, setCaptioning] = useState(false);
