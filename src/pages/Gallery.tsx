@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSiteContent, resolveImage } from "@/hooks/useSiteContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 type Item = { src: string; cat: string; alt: string };
 type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null; gallery_category: string | null };
@@ -39,7 +40,7 @@ const Gallery = () => {
     src: resolveImage(get("gallery", "grid", `image${i + 1}`, ""), d.src),
   }));
   const [active, setActive] = useState("All");
-  const [open, setOpen] = useState<string | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [publishedMedia, setPublishedMedia] = useState<MediaAsset[]>([]);
   const publishedPhotos = publishedMedia.filter((item) => item.kind === "image");
   const publishedVideos = publishedMedia.filter((item) => item.kind === "video");
@@ -92,7 +93,7 @@ const Gallery = () => {
                 {filtered.map((img, i) => (
                   <button
                     key={`${img.src}-${i}`}
-                    onClick={() => setOpen(img.src)}
+                    onClick={() => setOpenIndex(i)}
                     className="block w-full overflow-hidden rounded-2xl group break-inside-avoid"
                   >
                     <img src={img.src} alt={img.alt} loading="lazy" className="w-full transition-elegant group-hover:scale-105" />
@@ -105,20 +106,38 @@ const Gallery = () => {
               {publishedVideos.length === 0 ? (
                 <p className="py-16 text-center text-muted-foreground">No published videos yet.</p>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <Carousel opts={{ align: "start" }} className="mx-auto max-w-5xl">
+                  <CarouselContent>
                   {publishedVideos.map((video) => (
-                    <video key={video.id} src={video.public_url} controls preload="metadata" className="aspect-video w-full rounded-2xl bg-secondary object-cover" />
+                    <CarouselItem key={video.id} className="sm:basis-1/2 lg:basis-1/3">
+                      <video src={video.public_url} controls preload="metadata" className="aspect-video w-full rounded-2xl bg-secondary object-cover" />
+                    </CarouselItem>
                   ))}
-                </div>
+                  </CarouselContent>
+                  <CarouselPrevious className="hidden sm:flex" />
+                  <CarouselNext className="hidden sm:flex" />
+                </Carousel>
               )}
             </TabsContent>
           </Tabs>
         </div>
       </section>
 
-      <Dialog open={!!open} onOpenChange={() => setOpen(null)}>
+      <Dialog open={openIndex !== null} onOpenChange={() => setOpenIndex(null)}>
         <DialogContent className="max-w-5xl p-0 bg-transparent border-0 shadow-none">
-          {open && <img src={open} alt="" className="w-full rounded-2xl" />}
+          {openIndex !== null && (
+            <Carousel opts={{ startIndex: openIndex, loop: true }} className="w-full">
+              <CarouselContent>
+                {filtered.map((img, i) => (
+                  <CarouselItem key={`${img.src}-modal-${i}`}>
+                    <img src={img.src} alt={img.alt} className="max-h-[85vh] w-full rounded-2xl object-contain" />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-3" />
+              <CarouselNext className="right-3" />
+            </Carousel>
+          )}
         </DialogContent>
       </Dialog>
     </>
