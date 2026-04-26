@@ -383,7 +383,9 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
   const [altText, setAltText] = useState(asset.alt_text ?? "");
   const [captioning, setCaptioning] = useState(false);
+  const [posterBusy, setPosterBusy] = useState(false);
   const replaceInputRef = useRef<HTMLInputElement>(null);
+  const posterInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setAltText(asset.alt_text ?? ""); }, [asset.alt_text]);
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -397,7 +399,14 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
         {asset.kind === "image" ? (
           <img src={asset.public_url} alt={asset.alt_text ?? asset.filename} loading="lazy" className="w-full h-full object-cover" />
         ) : (
-          <video src={asset.public_url} className="w-full h-full bg-black object-contain" preload="metadata" playsInline muted />
+          <video
+            src={asset.public_url}
+            poster={asset.poster_url ?? undefined}
+            className="w-full h-full bg-black object-contain"
+            preload="metadata"
+            playsInline
+            muted
+          />
         )}
         <button
           {...attributes}
