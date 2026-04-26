@@ -361,13 +361,33 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
           </select>
         )}
 
-        <Input
-          value={altText}
-          onChange={(e) => setAltText(e.target.value)}
-          onBlur={() => { if ((altText || null) !== asset.alt_text) onUpdate(asset.id, { alt_text: altText || null }); }}
-          placeholder="Alt text (accessibility)"
-          className="h-8 text-xs"
-        />
+        <div className="flex gap-1">
+          <Input
+            value={altText}
+            onChange={(e) => setAltText(e.target.value)}
+            onBlur={() => { if ((altText || null) !== asset.alt_text) onUpdate(asset.id, { alt_text: altText || null }); }}
+            placeholder="Alt text (caption)"
+            className="h-8 text-xs"
+          />
+          {asset.kind === "image" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 shrink-0"
+              title="Auto-generate caption with AI"
+              disabled={captioning}
+              onClick={async () => {
+                setCaptioning(true);
+                const c = await onAutoCaption(asset);
+                if (c) setAltText(c);
+                setCaptioning(false);
+              }}
+            >
+              {captioning ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+            </Button>
+          )}
+        </div>
 
         <div className="rounded-md bg-secondary/60 p-2 space-y-2">
           <div className="flex items-center justify-between">
@@ -389,14 +409,35 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full h-8 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => onRemove(asset)}
-        >
-          <Trash2 className="size-3" /> Delete
-        </Button>
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept={asset.kind === "video" ? "video/*" : "image/*"}
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (replaceInputRef.current) replaceInputRef.current.value = "";
+            if (f) onReplace(asset, f);
+          }}
+        />
+        <div className="grid grid-cols-2 gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => replaceInputRef.current?.click()}
+          >
+            <RefreshCw className="size-3" /> Replace
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={() => onRemove(asset)}
+          >
+            <Trash2 className="size-3" /> Delete
+          </Button>
+        </div>
       </div>
     </Card>
   );
