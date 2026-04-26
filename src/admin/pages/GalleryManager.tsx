@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw } from "lucide-react";
+import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
+import { captureVideoFrame, uploadPoster } from "../lib/videoPoster";
 import {
   DndContext,
   closestCenter,
@@ -41,6 +42,8 @@ interface Asset {
   gallery_category: string | null;
   gallery_sort_order: number;
   published_at: string | null;
+  poster_url: string | null;
+  poster_path: string | null;
 }
 
 const GalleryManager = () => {
@@ -58,7 +61,7 @@ const GalleryManager = () => {
 
   const load = async () => {
     const { data, error } = await (supabase.from("media_assets") as any)
-      .select("id, storage_path, public_url, kind, filename, alt_text, show_in_gallery, is_published, gallery_category, gallery_sort_order, published_at")
+      .select("id, storage_path, public_url, kind, filename, alt_text, show_in_gallery, is_published, gallery_category, gallery_sort_order, published_at, poster_url, poster_path")
       .order("gallery_sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
