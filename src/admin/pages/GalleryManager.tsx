@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { Upload, Trash2, Loader2, Image as ImageIcon, Video, GripVertical, Eye, EyeOff, ExternalLink, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { logAudit } from "../lib/audit";
 import {
@@ -141,6 +141,53 @@ const GalleryManager = () => {
     setAssets((curr) => curr.filter((a) => a.id !== asset.id));
   };
 
+  const replace = async (asset: Asset, file: File) => {
+    if (file.size > 50 * 1024 * 1024) { toast.error("Max 50MB"); return; }
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) { toast.error("Unsupported file type"); return; }
+    if ((isVideo ? "video" : "image") !== asset.kind) {
+      toast.error(`Replacement must be the same type (${asset.kind})`);
+      return;
+    }
+    toast.info("Replacing…");
+    const folder = isVideo ? "videos" : "images";
+    const ext = file.name.split(".").pop();
+    const newPath = `${folder}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("media").upload(newPath, file, { contentType: file.type, cacheControl: "3600" });
+    if (upErr) { toast.error(upErr.message); return; }
+    const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(newPath);
+    const { error: dbErr } = await (supabase.from("media_assets") as any).update({
+      storage_path: newPath,
+      public_url: publicUrl,
+      filename: file.name,
+      mime_type: file.type,
+      size_bytes: file.size,
+    }).eq("id", asset.id);
+    if (dbErr) {
+      await supabase.storage.from("media").remove([newPath]);
+      toast.error(dbErr.message);
+      return;
+    }
+    // Best-effort cleanup of the previous file
+    await supabase.storage.from("media").remove([asset.storage_path]);
+    await logAudit("replace_gallery_media", "media_asset", asset.id, { old: asset.filename, new: file.name });
+    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, storage_path: newPath, public_url: publicUrl, filename: file.name } : a));
+    toast.success("Replaced");
+  };
+
+  const autoCaption = async (asset: Asset): Promise<string | null> => {
+    const { data, error } = await supabase.functions.invoke("auto-caption", {
+      body: { image_url: asset.public_url, category: asset.gallery_category },
+    });
+    if (error) { toast.error(error.message ?? "Caption failed"); return null; }
+    const caption = (data as { caption?: string })?.caption?.trim();
+    if (!caption) { toast.error("No caption returned"); return null; }
+    await updateAsset(asset.id, { alt_text: caption });
+    toast.success("Caption generated");
+    return caption;
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -240,7 +287,7 @@ const GalleryManager = () => {
           <SortableContext items={visible.map((a) => a.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {visible.map((a) => (
-                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} />
+                <SortableAssetCard key={a.id} asset={a} onUpdate={updateAsset} onRemove={remove} onReplace={replace} onAutoCaption={autoCaption} />
               ))}
             </div>
           </SortableContext>
@@ -258,11 +305,15 @@ interface CardProps {
   asset: Asset;
   onUpdate: (id: string, changes: Partial<Asset>) => void;
   onRemove: (asset: Asset) => void;
+  onReplace: (asset: Asset, file: File) => Promise<void>;
+  onAutoCaption: (asset: Asset) => Promise<string | null>;
 }
 
-const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
+const SortableAssetCard = ({ asset, onUpdate, onRemove, onReplace, onAutoCaption }: CardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: asset.id });
   const [altText, setAltText] = useState(asset.alt_text ?? "");
+  const [captioning, setCaptioning] = useState(false);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setAltText(asset.alt_text ?? ""); }, [asset.alt_text]);
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -310,13 +361,33 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
           </select>
         )}
 
-        <Input
-          value={altText}
-          onChange={(e) => setAltText(e.target.value)}
-          onBlur={() => { if ((altText || null) !== asset.alt_text) onUpdate(asset.id, { alt_text: altText || null }); }}
-          placeholder="Alt text (accessibility)"
-          className="h-8 text-xs"
-        />
+        <div className="flex gap-1">
+          <Input
+            value={altText}
+            onChange={(e) => setAltText(e.target.value)}
+            onBlur={() => { if ((altText || null) !== asset.alt_text) onUpdate(asset.id, { alt_text: altText || null }); }}
+            placeholder="Alt text (caption)"
+            className="h-8 text-xs"
+          />
+          {asset.kind === "image" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 shrink-0"
+              title="Auto-generate caption with AI"
+              disabled={captioning}
+              onClick={async () => {
+                setCaptioning(true);
+                const c = await onAutoCaption(asset);
+                if (c) setAltText(c);
+                setCaptioning(false);
+              }}
+            >
+              {captioning ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+            </Button>
+          )}
+        </div>
 
         <div className="rounded-md bg-secondary/60 p-2 space-y-2">
           <div className="flex items-center justify-between">
@@ -338,14 +409,35 @@ const SortableAssetCard = ({ asset, onUpdate, onRemove }: CardProps) => {
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full h-8 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => onRemove(asset)}
-        >
-          <Trash2 className="size-3" /> Delete
-        </Button>
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept={asset.kind === "video" ? "video/*" : "image/*"}
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (replaceInputRef.current) replaceInputRef.current.value = "";
+            if (f) onReplace(asset, f);
+          }}
+        />
+        <div className="grid grid-cols-2 gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => replaceInputRef.current?.click()}
+          >
+            <RefreshCw className="size-3" /> Replace
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={() => onRemove(asset)}
+          >
+            <Trash2 className="size-3" /> Delete
+          </Button>
+        </div>
       </div>
     </Card>
   );
