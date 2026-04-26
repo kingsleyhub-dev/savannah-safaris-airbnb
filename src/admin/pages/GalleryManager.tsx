@@ -175,23 +175,73 @@ const GalleryManager = () => {
     const { error: upErr } = await supabase.storage.from("media").upload(newPath, file, { contentType: file.type, cacheControl: "3600" });
     if (upErr) { toast.error(upErr.message); return; }
     const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(newPath);
-    const { error: dbErr } = await (supabase.from("media_assets") as any).update({
+    const updates: any = {
       storage_path: newPath,
       public_url: publicUrl,
       filename: file.name,
       mime_type: file.type,
       size_bytes: file.size,
-    }).eq("id", asset.id);
+    };
+
+    // Regenerate poster when replacing a video
+    let oldPosterPath: string | null = null;
+    if (isVideo) {
+      const blob = await captureVideoFrame(file, 1).catch(() => null);
+      if (blob) {
+        const uploaded = await uploadPoster(blob);
+        if (uploaded) {
+          updates.poster_url = uploaded.url;
+          updates.poster_path = uploaded.path;
+          oldPosterPath = asset.poster_path;
+        }
+      }
+    }
+
+    const { error: dbErr } = await (supabase.from("media_assets") as any).update(updates).eq("id", asset.id);
     if (dbErr) {
       await supabase.storage.from("media").remove([newPath]);
+      if (updates.poster_path) await supabase.storage.from("media").remove([updates.poster_path]);
       toast.error(dbErr.message);
       return;
     }
-    // Best-effort cleanup of the previous file
+    // Best-effort cleanup of the previous file(s)
     await supabase.storage.from("media").remove([asset.storage_path]);
+    if (oldPosterPath) await supabase.storage.from("media").remove([oldPosterPath]);
     await logAudit("replace_gallery_media", "media_asset", asset.id, { old: asset.filename, new: file.name });
-    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, storage_path: newPath, public_url: publicUrl, filename: file.name } : a));
+    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, ...updates } : a));
     toast.success("Replaced");
+  };
+
+  const setPoster = async (asset: Asset, blob: Blob) => {
+    const uploaded = await uploadPoster(blob);
+    if (!uploaded) { toast.error("Poster upload failed"); return; }
+    const oldPath = asset.poster_path;
+    const { error } = await (supabase.from("media_assets") as any)
+      .update({ poster_url: uploaded.url, poster_path: uploaded.path })
+      .eq("id", asset.id);
+    if (error) {
+      await supabase.storage.from("media").remove([uploaded.path]);
+      toast.error(error.message);
+      return;
+    }
+    if (oldPath) await supabase.storage.from("media").remove([oldPath]);
+    setAssets((curr) => curr.map((a) => a.id === asset.id ? { ...a, poster_url: uploaded.url, poster_path: uploaded.path } : a));
+    await logAudit("update_video_poster", "media_asset", asset.id, {});
+    toast.success("Poster updated");
+  };
+
+  const recapturePoster = async (asset: Asset) => {
+    toast.info("Capturing frame…");
+    const blob = await captureVideoFrame(asset.public_url, 1).catch(() => null);
+    if (!blob) { toast.error("Could not capture frame (CORS?)"); return; }
+    await setPoster(asset, blob);
+  };
+
+  const uploadPosterFile = async (asset: Asset, file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Poster must be an image"); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error("Poster max 10MB"); return; }
+    toast.info("Uploading poster…");
+    await setPoster(asset, file);
   };
 
   const autoCaption = async (asset: Asset): Promise<string | null> => {
