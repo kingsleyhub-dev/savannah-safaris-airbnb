@@ -52,6 +52,12 @@ export const Hero = () => {
         <div ref={stageRef} className="hero-logo-stage -mb-3 w-full flex justify-center">
           <div className="hero-logo-reveal relative">
             <div className="hero-logo-float relative">
+              {/* Premium elliptical orbit ring with traveling highlight */}
+              <div className="hero-ring-stage" aria-hidden="true">
+                <div className="hero-ring-base" />
+                <div className="hero-ring-inner" />
+                <div className="hero-ring-sweep" />
+              </div>
               {/* Ambient olive/lime glow behind the mark */}
               <div className="hero-logo-glow" aria-hidden="true" />
               {/* Bird-pass ambient highlight (pulses when bird nears the logo) */}
