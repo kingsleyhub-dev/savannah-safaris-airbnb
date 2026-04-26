@@ -9,36 +9,57 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 type Item = { src: string; cat: string; alt: string };
 type MediaAsset = { id: string; public_url: string; kind: "image" | "video"; filename: string; alt_text: string | null; gallery_category: string | null };
-const allDefaults: Item[] = [
-  { src: images.bedroom, cat: "Bedrooms", alt: "Master bedroom" },
-  { src: images.bedroom2, cat: "Bedrooms", alt: "Second bedroom" },
-  { src: images.bedroom2Alt1, cat: "Bedrooms", alt: "Second bedroom — wide view" },
-  { src: images.bedroom2Alt2, cat: "Bedrooms", alt: "Second bedroom — headboard detail" },
-  { src: images.living, cat: "Living Room", alt: "Sitting lounge" },
-  { src: images.living2, cat: "Living Room", alt: "Lounge — wide view" },
-  { src: images.dining, cat: "Dining Area", alt: "Dining" },
-  { src: images.dining2, cat: "Dining Area", alt: "Dining — chandelier view" },
-  { src: images.dining3, cat: "Dining Area", alt: "Dining — side view" },
-  { src: images.kitchen, cat: "Kitchen", alt: "Kitchen" },
-  { src: images.kitchen2, cat: "Kitchen", alt: "Kitchen — counter view" },
-  { src: images.kitchen3, cat: "Kitchen", alt: "Kitchen — wide view" },
-  { src: images.bathroom, cat: "Bathrooms", alt: "Master bathroom" },
-  { src: images.bathroomAlt1, cat: "Bathrooms", alt: "Second bathroom" },
-  { src: images.bathroomAlt2, cat: "Bathrooms", alt: "Bathroom — vanity detail" },
-  { src: images.view, cat: "Views", alt: "City view" },
-  { src: images.hero, cat: "Exterior", alt: "Balcony" },
-  { src: images.bedroomAlt1, cat: "Bedrooms", alt: "Bedroom — wider view" },
-  { src: images.bedroomAlt2, cat: "Bedrooms", alt: "Bedroom — detail" },
+
+// Each entry maps a category section to its default photos. The section slug
+// (e.g. "bedrooms") + key (e.g. "image1") is what admins edit in the portal.
+const categoryDefaults: { cat: string; slug: string; items: { key: string; src: string; alt: string }[] }[] = [
+  { cat: "Bedrooms", slug: "bedrooms", items: [
+    { key: "image1", src: images.bedroom, alt: "Master bedroom" },
+    { key: "image2", src: images.bedroom2, alt: "Second bedroom" },
+    { key: "image3", src: images.bedroom2Alt1, alt: "Second bedroom — wide view" },
+    { key: "image4", src: images.bedroom2Alt2, alt: "Second bedroom — headboard detail" },
+    { key: "image5", src: images.bedroomAlt1, alt: "Bedroom — wider view" },
+    { key: "image6", src: images.bedroomAlt2, alt: "Bedroom — detail" },
+  ]},
+  { cat: "Living Room", slug: "living-room", items: [
+    { key: "image1", src: images.living, alt: "Sitting lounge" },
+    { key: "image2", src: images.living2, alt: "Lounge — wide view" },
+  ]},
+  { cat: "Dining Area", slug: "dining-area", items: [
+    { key: "image1", src: images.dining, alt: "Dining" },
+    { key: "image2", src: images.dining2, alt: "Dining — chandelier view" },
+    { key: "image3", src: images.dining3, alt: "Dining — side view" },
+  ]},
+  { cat: "Kitchen", slug: "kitchen", items: [
+    { key: "image1", src: images.kitchen, alt: "Kitchen" },
+    { key: "image2", src: images.kitchen2, alt: "Kitchen — counter view" },
+    { key: "image3", src: images.kitchen3, alt: "Kitchen — wide view" },
+  ]},
+  { cat: "Bathrooms", slug: "bathrooms", items: [
+    { key: "image1", src: images.bathroom, alt: "Master bathroom" },
+    { key: "image2", src: images.bathroomAlt1, alt: "Second bathroom" },
+    { key: "image3", src: images.bathroomAlt2, alt: "Bathroom — vanity detail" },
+  ]},
+  { cat: "Views", slug: "views", items: [
+    { key: "image1", src: images.view, alt: "City view" },
+  ]},
+  { cat: "Exterior", slug: "exterior", items: [
+    { key: "image1", src: images.hero, alt: "Balcony" },
+  ]},
 ];
-const baseCats = ["All", ...Array.from(new Set(allDefaults.map((i) => i.cat)))];
+
+const baseCats = ["All", ...categoryDefaults.map((c) => c.cat)];
 
 const Gallery = () => {
   const { get } = useSiteContent();
   const h = (k: string, fb: string) => get("gallery", "hero", k, fb);
-  const all: Item[] = allDefaults.map((d, i) => ({
-    ...d,
-    src: resolveImage(get("gallery", "grid", `image${i + 1}`, ""), d.src),
-  }));
+  const all: Item[] = categoryDefaults.flatMap((cat) =>
+    cat.items.map((item) => ({
+      cat: cat.cat,
+      alt: get("gallery", cat.slug, `${item.key}_alt`, item.alt),
+      src: resolveImage(get("gallery", cat.slug, item.key, ""), item.src),
+    }))
+  );
   const [active, setActive] = useState("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [publishedMedia, setPublishedMedia] = useState<MediaAsset[]>([]);
