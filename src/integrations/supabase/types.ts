@@ -277,6 +277,27 @@ export type Database = {
         }
         Relationships: []
       }
+      receipt_downloads: {
+        Row: {
+          booking_id: string
+          downloaded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          booking_id: string
+          downloaded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string
+          downloaded_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sections: {
         Row: {
           created_at: string
